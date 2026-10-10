@@ -8,6 +8,7 @@ import argparse
 import csv
 import hashlib
 import json
+import re
 from pathlib import Path
 import subprocess
 import sys
@@ -17,10 +18,48 @@ FILES = {
     'pokemonsJa': 'src/i18n/ja/pokemons.json',
     'dataJa': 'src/i18n/ja/data.json',
     'skillsJa': 'src/i18n/ja/skills.json',
+    'subskillType': 'src/util/SubSkill.ts',
 }
 PROPS = ('arrival', 'frequency', 'carryLimit', 'ingRate', 'skillRate',
          'evolutionCount', 'evolutionLeft', 'specialty', 'type')
 
+
+
+def selectable_subskill_keys(typescript):
+    """Derive exact selectable skill keys, NEVER read translation headings.
+
+    Fail closed if the upstream TypeScript enum/grouping changes. The six
+    display headings in data.json are NOT selectable subskills.
+    """
+    if not isinstance(typescript,str) or not typescript:
+        raise ValueError('Missing trusted upstream subskill type source')
+    code=re.sub(r'/\*.*?\*/|//[^\n]*','',typescript,flags=re.S)
+    groups=(('GoldSubSkillType','goldSubSkillNames'),
+            ('BlueSubSkillType','blueSubSkillNames'),
+            ('WhiteSubSkillType','whiteSubSkillNames'))
+    union=re.search(r'export\s+type\s+SubSkillType\s*=\s*(.*?);',code,re.S)
+    if union is None:raise ValueError('Unknown selectable subskill union')
+    members=re.findall(r'\b(?:GoldSubSkillType|BlueSubSkillType|WhiteSubSkillType)\b',union.group(1))
+    if members!=[a for a,_ in groups] or re.sub(r'\b(?:GoldSubSkillType|BlueSubSkillType|WhiteSubSkillType)\b|[|\s]','',union.group(1)):
+        raise ValueError('Unknown selectable subskill union structure')
+    result=[]
+    for typename,arrname in groups:
+        typ=re.search(r'(?<![\w])type\s+'+typename+r'\s*=\s*(.*?);',code,re.S)
+        arr=re.search(r'\b'+arrname+r'\s*:\s*'+typename+r'\[\]\s*=\s*\[(.*?)\]\s*;',code,re.S)
+        if typ is None or arr is None:raise ValueError('Missing selectable subskill group')
+        declared=re.findall(r'"([^"\n]+)"',typ.group(1))
+        ordered=re.findall(r'"([^"\n]+)"',arr.group(1))
+        if (not declared or declared!=ordered or len(set(declared))!=len(declared)
+            or re.sub(r'"[^"\n]+"|[|,\s]','',typ.group(1))
+            or re.sub(r'"[^"\n]+"|[|,\s]','',arr.group(1))):
+            raise ValueError('Unrecognized subskill literal group')
+        result+=declared
+    final=re.search(r'(?<![\w])subSkillNames\s*:\s*SubSkillType\[\]\s*=\s*\[(.*?)\]\s*;',code,re.S)
+    if (final is None or re.findall(r'\.\.\.this\.(\w+)',final.group(1))!=[b for _,b in groups]
+        or re.sub(r'\.\.\.this\.\w+|[,\s]','',final.group(1))
+        or len(set(result))!=len(result) or len(result)<17):
+        raise ValueError('Unknown selectable subskill aggregation')
+    return result
 
 def load_json(path):
     return json.loads(Path(path).read_text(encoding='utf-8'))
@@ -49,6 +88,9 @@ def project(upstream):
     translations = upstream['dataJa']
     items = translations['ingredients']
     skills = upstream['skillsJa']['skills']
+    active_subskills=selectable_subskill_keys(upstream['subskillType'])
+    if any(x not in translations['subskill'] for x in active_subskills):
+        raise ValueError('Selectable subskill lacks Japanese translation')
     out = {}
     for pokemon in pokemons:
         en = pokemon['name']
@@ -68,11 +110,11 @@ def project(upstream):
                 raise ValueError('unexpected mythIng structure for ' + en)
             row['mythIng'] = [entry_of_ingredient(entry, items) for entry in raw]
         out[en] = row
-    return out, translations
+    return out, translations, active_subskills
 
 
 def compare(baseline, upstream, sha, commit):
-    now, translations = project(upstream)
+    now, translations, active_subskills = project(upstream)
     old_list = baseline['pokemon']
     old = {p['name_en']: p for p in old_list}
     if len(old) != len(old_list):
@@ -93,7 +135,7 @@ def compare(baseline, upstream, sha, commit):
     for domain, left, right in (
         ('ingredients', baseline['ingredients'], translations['ingredients']),
         ('natures', old_nature, translations['natures']),
-        ('subskills', old_sub, translations['subskill']),
+        ('subskills', old_sub, {key:translations['subskill'][key] for key in active_subskills}),
     ):
         for key in sorted(set(left) | set(right)):
             if left.get(key) != right.get(key):
@@ -166,7 +208,7 @@ def audit(upstream_root, baseline_path, expected_baseline_sha256=None):
     data, sha = {}, {}
     for key, filename in FILES.items():
         p = upstream_root / filename
-        data[key] = load_json(p)
+        data[key] = p.read_text(encoding='utf-8') if key=='subskillType' else load_json(p)
         sha[key] = digest(p)
     baseline = load_json(baseline_path)
     output = compare(baseline, data, sha, commit)
