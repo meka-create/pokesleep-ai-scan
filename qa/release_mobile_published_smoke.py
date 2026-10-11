@@ -28,8 +28,29 @@ with sync_playwright() as p:
     page=context.new_page()
     page.on('pageerror',lambda error:result['consoleErrors'].append(str(error)))
     try:
-        r=page.goto(URL,wait_until='domcontentloaded',timeout=45000)
-        assert r and r.status==200,('PUBLIC_HTTP',r.status if r else None)
+        expected_kit=json.loads((ROOT/'release-kit-assets/KIT_VERSION.json').read_text(encoding='utf-8'))
+        # On GitHub Pages, push-triggered tests can start before the new
+        # deployment has propagated. Do not mistake the preceding release for
+        # a broken app. Retry the actual public HTML and kit together.
+        for attempt in range(12):
+            r=page.goto(URL+'?release_audit='+str(attempt),
+                        wait_until='domcontentloaded',timeout=45000)
+            html=page.content()
+            response=page.request.get(
+                URL+'release-kit-assets/KIT_VERSION.json?release_audit='+str(attempt),
+                timeout=20000,headers={'Cache-Control':'no-cache'})
+            try:
+                live_kit=response.json() if response.ok else {}
+            except Exception:
+                live_kit={}
+            if (r and r.status==200 and
+                live_kit.get('siteHotfixId')==expected_kit['siteHotfixId'] and
+                'app.js?v='+expected_kit['siteHotfixId'] in html):
+                result['siteReadyAttempt']=attempt+1
+                break
+            if attempt==11:
+                raise AssertionError('PUBLIC_RELEASE_PROPAGATION_UNVERIFIED: '+str(live_kit.get('siteHotfixId')))
+            page.wait_for_timeout(15000)
         page.locator('#choose-files').wait_for(state='attached',timeout=15000)
         page.screenshot(path=str(OUT/'01_public_mobile.png'),full_page=True)
         modal=page.locator('#tipsDialog')
@@ -70,7 +91,6 @@ with sync_playwright() as p:
             assert 'RELEASE_EVIDENCE.json' in z.namelist()
             # Verify the deployed ZIP against the CURRENT checked-out release
             # pin. A hard-coded older tag would break every future release.
-            expected_kit=json.loads((ROOT/'release-kit-assets/KIT_VERSION.json').read_text(encoding='utf-8'))
             assert kit['siteHotfixId']==expected_kit['siteHotfixId']
         page.screenshot(path=str(OUT/'03_mobile_ready.png'),full_page=True)
     finally:
