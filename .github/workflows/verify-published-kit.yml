@@ -1,0 +1,53 @@
+name: AI Scan public Pages kit integrity smoke (NO RELEASE)
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/verify-published-kit.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  public-integrity:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Pin trusted public verifier
+        uses: actions/checkout@v4
+        with:
+          ref: 7fc1ba49126a8e2e552ce7c9f58f062e388da456
+          path: trusted_tools
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Check HTML, JS, all 16 kit assets and HOLD on actual public HTTP
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p public-evidence
+          python trusted_tools/scripts/verify_pages_live.py \
+            --site . \
+            --url https://meka-create.github.io/pokesleep-ai-scan/ \
+            --commit "$GITHUB_SHA" --attempts 8 --delay 20 \
+            --out public-evidence/PAGES_DEPLOYMENT_HEALTH.json
+          python - <<'PY'
+          import json
+          j=json.load(open('public-evidence/PAGES_DEPLOYMENT_HEALTH.json'))
+          assert j['result']=='ALL_EXPECTED_ASSETS_LIVE',j['result']
+          assert j['productionCsvAllowed'] is False
+          print('ALL_PUBLIC_22_ASSETS_MATCH_EXPECTED_BYTES AND CSV_HOLD')
+          PY
+      - name: Save public HTTP validation evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: AI_Scan_Public_Kit_22_Assets_ReadOnly_Evidence
+          path: public-evidence/
+          retention-days: 30
+          if-no-files-found: warn
