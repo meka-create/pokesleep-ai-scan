@@ -58,6 +58,9 @@ def main():
        raw=z.read(x['path']);assert raw==baseline[i].read_bytes(),(i,'bytes')
        assert sha(raw)==x['sha256'],(i,'sha')
       assert '全画像の一律な二度読み' in z.read('START_HERE.md').decode()
+      reading=z.read('READING_RULES.md').decode('utf-8')
+      assert '右端の食材3は' in reading and '枠色・隣枠の内容だけでランクや効果を決めない' in reading
+      assert 'なお複数候補が残れば推測で確定せずユーザーに確認する' in reading
      assert not errors,errors
      result={'n':n,'zipBytes':target.stat().st_size,'elapsedSeconds':round(time.monotonic()-start,2),'entries':n+17,'originalImageSha256Match':True,'kitShaMatch':True,'jsErrors':0}
      report['sizes'].append(result);print('PASS',result,flush=True);context.close()

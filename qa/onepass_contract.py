@@ -19,7 +19,7 @@ s=(R/'app.js').read_text()
 assert f"KIT_VERSION_RAW_SHA256 = '{H(K/'KIT_VERSION.json')}'" in s
 assert f"SITE_HOTFIX_ID = '{v['siteHotfixId']}'" in s
 assert v['siteHotfixId'] in (R/'sw.js').read_text()
-assert './app.js?v=v20-stage-subskill-onepass-20261011' in (R/'index.html').read_text()
+assert './app.js?v=v21-visual-disambiguation-20261011' in (R/'index.html').read_text()
 assert 'update-watch-close-bottom' not in (R/'index.html').read_text()
 for f in ('AI_INSTRUCTIONS.md','READING_RULES.md','SPECIES_AUDIT_GUIDE.md'):
  s=(K/f).read_text()
@@ -34,6 +34,9 @@ assert '文字が薄い未解放枠でも' in (K/'READING_RULES.md').read_text()
 assert 'その枠だけ元画像を画素非改変で拡大・再確認' in (K/'READING_RULES.md').read_text()
 assert '既知の似たスキル名から効果語を自動補完しない' in (K/'READING_RULES.md').read_text()
 assert '候補間の外見差を照合してから種族名を確定する' in (K/'READING_RULES.md').read_text()
+assert '枠色・隣枠の内容だけでランクや効果を決めない' in (K/'READING_RULES.md').read_text()
+assert 'なお複数候補が残れば推測で確定せずユーザーに確認する' in (K/'READING_RULES.md').read_text()
+assert '右端の食材3は' in (K/'READING_RULES.md').read_text()
 assert '全画像の一律な二度読み' in (K/'START_HERE.md').read_text()
 assert (K/'PROGRESS_PROTOCOL.md').read_text().startswith('# 画像解析・報告の確定運用')
 assert not ('Golden172' in (R/'app.js').read_text())
