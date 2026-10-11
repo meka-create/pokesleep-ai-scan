@@ -37,7 +37,7 @@ with sync_playwright() as p:
             if close.count() and close.is_visible():
                 close.click()
         page.locator('#choose-files').set_input_files(str(SOURCE))
-        page.wait_for_function("() => document.querySelector('#build') && !document.querySelector('#build').disabled",{ },timeout=25000)
+        page.wait_for_function("() => document.querySelector('#build') && !document.querySelector('#build').disabled",timeout=25000)
         page.screenshot(path=str(OUT/'02_mobile_selected.png'),full_page=True)
         with page.expect_download(timeout=90000) as info:
             page.locator('#build').click()
