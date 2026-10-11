@@ -1,0 +1,154 @@
+name: Foongus Amoonguss historical add 247-249 REAL E2E (NO RELEASE)
+on:
+  push:
+    branches: [autopromote-restoration-audit]
+    paths:
+      - 'tests/foongus_case.py'
+      - '.github/workflows/foongus-replay-readonly.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: foongus-amoonguss-247to249-simulation
+  cancel-in-progress: false
+jobs:
+  replay:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    permissions:
+      contents: read
+    env:
+      PINNED_UPSTREAM: f394104a0a9d44335a8697143464e5add9815643
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Real chromium and test deps
+        run: |
+          python -m pip install playwright==1.56.0 Pillow==11.3.0 pyyaml==6.0.3
+          python -m playwright install --with-deps chromium
+      - name: Pin real pokesleep-tool source; refuse moving HEAD
+        shell: bash
+        run: |
+          set -euo pipefail
+          git init "$RUNNER_TEMP/real-upstream"
+          git -C "$RUNNER_TEMP/real-upstream" remote add origin https://github.com/nitoyon/pokesleep-tool.git
+          git -C "$RUNNER_TEMP/real-upstream" fetch --depth 1 origin "$PINNED_UPSTREAM"
+          git -C "$RUNNER_TEMP/real-upstream" checkout --detach FETCH_HEAD
+          test "$(git -C "$RUNNER_TEMP/real-upstream" rev-parse HEAD)" = "$PINNED_UPSTREAM"
+          echo 'UPSTREAM_SOURCE_PIN_OK'
+      - name: Create isolated 247 baseline ONLY; never touch repo source
+        shell: bash
+        run: |
+          set -euo pipefail
+          python tests/foongus_case.py prepare \
+            --src . --dst "$RUNNER_TEMP/foongus247" \
+            --report "$RUNNER_TEMP/foongus-proof/baseline.json"
+      - name: Real upstream preflight and 247 to 249 delta detection
+        shell: bash
+        run: |
+          set -euo pipefail
+          python scripts/daily_watch.py \
+            --upstream "$RUNNER_TEMP/real-upstream" \
+            --kit-dir "$RUNNER_TEMP/foongus247/kit-assets" \
+            --out "$RUNNER_TEMP/foongus-stage"
+          python tests/foongus_case.py candidate \
+            --source . --site "$RUNNER_TEMP/foongus247" \
+            --stage "$RUNNER_TEMP/foongus-stage" \
+            --report "$RUNNER_TEMP/foongus-proof/candidate_match.json"
+      - name: Generate three 16-column candidate-specific CSV vectors
+        shell: bash
+        run: |
+          set -euo pipefail
+          python scripts/build_auto_vectors.py \
+            --master "$RUNNER_TEMP/foongus-stage/MASTER_DATA.candidate.json" \
+            --diff "$RUNNER_TEMP/foongus-stage/UPSTREAM_DIFF.json" \
+            --csv "$RUNNER_TEMP/foongus-stage/AUTO_VECTORS.csv" \
+            --coverage "$RUNNER_TEMP/foongus-stage/VECTOR_COVERAGE.json"
+          python tests/foongus_case.py vectors \
+            --csv "$RUNNER_TEMP/foongus-stage/AUTO_VECTORS.csv" \
+            --coverage "$RUNNER_TEMP/foongus-stage/VECTOR_COVERAGE.json" \
+            --report "$RUNNER_TEMP/foongus-proof/csv_vectors.json"
+      - name: REAL browser import-export on pinned source build AND public importer
+        shell: bash
+        run: |
+          set -euo pipefail
+          python scripts/run_pinned_import_e2e.py \
+            --upstream "$RUNNER_TEMP/real-upstream" \
+            --candidate "$RUNNER_TEMP/foongus-stage/MASTER_DATA.candidate.json" \
+            --diff "$RUNNER_TEMP/foongus-stage/UPSTREAM_DIFF.json" \
+            --schema "$RUNNER_TEMP/foongus247/kit-assets/CSV_SCHEMA.json" \
+            --validator "$RUNNER_TEMP/foongus247/kit-assets/VALIDATOR.py" \
+            --preflight "$RUNNER_TEMP/foongus-stage/preflight/UPSTREAM_PREFLIGHT.json" \
+            --vector "$RUNNER_TEMP/foongus-stage/AUTO_VECTORS.csv" \
+            --coverage "$RUNNER_TEMP/foongus-stage/VECTOR_COVERAGE.json" \
+            --out "$RUNNER_TEMP/foongus-stage/e2e" \
+            --run-id "$GITHUB_RUN_ID" --base-sha "$GITHUB_SHA"
+      - name: Bind all promotion proof to THIS run's 247 baseline + pinned source
+        shell: bash
+        run: |
+          set -euo pipefail
+          D="$RUNNER_TEMP/foongus-stage"
+          B="$RUNNER_TEMP/foongus-bundle"
+          mkdir -p "$B/upstream_source/src/data" "$B/upstream_source/src/i18n/ja" "$B/upstream_source/src/util"
+          cp "$D/MASTER_DATA.candidate.json" "$D/UPSTREAM_DIFF.json" "$D/AUTO_VECTORS.csv" "$D/VECTOR_COVERAGE.json" "$D/preflight/UPSTREAM_PREFLIGHT.json" "$D/e2e/PROMOTION_PROOF.json" "$B/"
+          cp "$D/e2e/browser/PROBE_RESULT.json" "$B/PROBE_RESULT.json"
+          cp "$D/e2e/browser/roundtrip_export.csv" "$B/roundtrip_export.csv"
+          cp "$D/e2e/live/PROBE_RESULT.json" "$B/LIVE_PROBE_RESULT.json"
+          cp "$D/e2e/live/roundtrip_export.csv" "$B/live_roundtrip_export.csv"
+          cp "$RUNNER_TEMP/real-upstream/src/data/pokemon.json" "$B/upstream_source/src/data/"
+          cp "$RUNNER_TEMP/real-upstream/src/i18n/ja/"{pokemons,data,skills}.json "$B/upstream_source/src/i18n/ja/"
+          cp "$RUNNER_TEMP/real-upstream/src/util/SubSkill.ts" "$B/upstream_source/src/util/"
+      - name: Independent publisher verification and atomic local promotion (NO PUSH)
+        shell: bash
+        run: |
+          set -euo pipefail
+          python scripts/publish_auto_result.py \
+            --site "$RUNNER_TEMP/foongus247" \
+            --bundle "$RUNNER_TEMP/foongus-bundle" \
+            --upstream "$RUNNER_TEMP/real-upstream" \
+            --audit-status "$RUNNER_TEMP/foongus-stage/update-status.json" \
+            --audit-result success \
+            --run-id "$GITHUB_RUN_ID" --base-sha "$GITHUB_SHA" \
+            | tee "$RUNNER_TEMP/foongus-proof/publisher_result.json"
+          python - "$RUNNER_TEMP/foongus-proof/publisher_result.json" <<'PY'
+          import json,sys
+          p=json.load(open(sys.argv[1])); assert p['promoted'] is True,p
+          assert p['productionCsvAllowed'] is False
+          assert len(p['changedPaths'])==7
+          PY
+      - name: Independently verify all 249 values and staged kit signatures
+        shell: bash
+        run: |
+          set -euo pipefail
+          python tests/foongus_case.py promoted \
+            --reference . --site "$RUNNER_TEMP/foongus247" \
+            --report "$RUNNER_TEMP/foongus-proof/promoted_master.json"
+      - name: Actual Chromium scans one test PNG and downloads promoted kit ZIP
+        shell: bash
+        run: |
+          set -euo pipefail
+          python tests/foongus_case.py ui-zip \
+            --site "$RUNNER_TEMP/foongus247" \
+            --report "$RUNNER_TEMP/foongus-proof/actual_browser_zip.json"
+      - name: Preserve receipts but never write active master
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: Foongus_Amoonguss_247to249_ReadOnly_Evidence
+          path: |
+            ${{ runner.temp }}/foongus-proof/
+            ${{ runner.temp }}/foongus-stage/UPSTREAM_DIFF.json
+            ${{ runner.temp }}/foongus-stage/VECTOR_COVERAGE.json
+            ${{ runner.temp }}/foongus-stage/AUTO_VECTORS.csv
+            ${{ runner.temp }}/foongus-stage/e2e/PROMOTION_PROOF.json
+            ${{ runner.temp }}/foongus-stage/e2e/browser/PROBE_RESULT.json
+            ${{ runner.temp }}/foongus-stage/e2e/live/PROBE_RESULT.json
+          retention-days: 30
+          if-no-files-found: error
