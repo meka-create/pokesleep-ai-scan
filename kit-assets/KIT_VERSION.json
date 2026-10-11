@@ -27,8 +27,8 @@
     "numeric_observer.py": "05c3932380ee038574b51f851af994b90e8798d2f9acf23fea9afc0c31f4b97b",
     "species_evidence_lab.py": "aa397228df5ef040aa7c2d8edfea5774eac79e6d56f8f91d5216e3e088541a76"
   },
-  "siteHotfixId": "v18-plus-promotion-policy-candidate-HOLD",
+  "siteHotfixId": "v18-interim-audit-20261011-HOLD",
   "sourceCommit": null,
-  "status": "PROTOTYPE ONLY / HOLD - additive master policy isolated candidate; no automatic public promotion authorized",
+  "status": "PROTOTYPE ONLY / HOLD - verified additions-only development-master auto-promotion enabled; production CSV compatibility/export NOT authorized",
   "upstream": "https://github.com/nitoyon/pokesleep-tool"
 }

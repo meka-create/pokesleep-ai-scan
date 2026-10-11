@@ -10,6 +10,7 @@ const validStates = new Set(['healthy', 'attention', 'pending']);
 const pendingUpdateCodes = new Set([
   'UPDATE_REQUIRES_VALIDATION', 'IMPORTER_E2E_NOT_VERIFIED',
   'AUTOMATIC_RELEASE_NOT_VERIFIED', 'AUTOPROMOTION_REJECTED',
+  'PAGES_DEPLOYMENT_UNVERIFIED', 'AUTO_DEPLOY_ROLLED_BACK',
   'UPSTREAM_PREFLIGHT_FAILED'
 ]);
 function invalidWatch(message) {

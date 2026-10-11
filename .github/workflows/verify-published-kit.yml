@@ -4,6 +4,17 @@ on:
     branches: [main]
     paths:
       - '.github/workflows/verify-published-kit.yml'
+      - 'index.html'
+      - 'app.js'
+      - 'sw.js'
+      - 'zip-store.js'
+      - 'styles.css'
+      - 'ui-extras.js'
+      - 'update-status.js'
+      - 'manifest.webmanifest'
+      - 'kit-assets/**'
+      - 'icons/**'
+      - 'assets/**'
   workflow_dispatch:
 permissions:
   contents: read
@@ -42,6 +53,30 @@ jobs:
           assert j['result']=='ALL_EXPECTED_ASSETS_LIVE',j['result']
           assert j['productionCsvAllowed'] is False
           print('ALL_PUBLIC_22_ASSETS_MATCH_EXPECTED_BYTES AND CSV_HOLD')
+          PY
+      - name: Check omitted static assets over public HTTPS (10 paths)
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import hashlib, pathlib, time, urllib.request
+          root=pathlib.Path('.')
+          missing=['update-status.js','manifest.webmanifest','assets/example-screenshot.png',
+                   'assets/ogp-card.png','icons/apple-touch-icon.png','icons/favicon-32.png',
+                   'icons/icon-192.png','icons/icon-512-maskable.png','icons/icon-512.png',
+                   'icons/icon-maskable-192.png']
+          # This separate group excludes status JSON (dynamic and not part of the ZIP).
+          assert len(missing)==10 and len(set(missing))==10
+          base='https://meka-create.github.io/pokesleep-ai-scan/'
+          for name in missing:
+              local=(root/name).read_bytes()
+              url=base+name+'?integrity='+str(time.time_ns())
+              req=urllib.request.Request(url,headers={'Cache-Control':'no-cache','Pragma':'no-cache'})
+              with urllib.request.urlopen(req,timeout=18) as response:
+                  assert response.status==200,(name,response.status)
+                  remote=response.read()
+              assert hashlib.sha256(remote).digest()==hashlib.sha256(local).digest(),name
+          print('ALL_ADDITIONAL_10_PUBLIC_ASSETS_MATCH_EXPECTED_BYTES')
           PY
       - name: Save public HTTP validation evidence
         if: always()
