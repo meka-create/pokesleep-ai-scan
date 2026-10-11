@@ -1,0 +1,50 @@
+name: Work final audit immutable source snapshot (NO IMAGES NO DEPLOY)
+on:
+  push:
+    branches: [work-final-audit-source-snapshot-20261011]
+permissions:
+  contents: read
+jobs:
+  snapshot:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout exact released main
+        uses: actions/checkout@v4
+        with:
+          ref: f6ad4b69e7f8c8a9918a0e193d6e9a011dff7ab3
+          persist-credentials: false
+      - name: Pack complete source text and manifest, exclude images, secrets, bin
+        run: |
+          python - <<'PY'
+          import hashlib,json,pathlib,zipfile
+          root=pathlib.Path('.')
+          allowed={'.py','.js','.mjs','.cjs','.html','.css','.md','.json','.yaml','.yml','.toml','.ini','.cfg','.txt','.webmanifest','.sh','.ts','.tsx'}
+          excludes={'.git','node_modules','.venv','__pycache__','step2_evidence','step2_mobile_evidence','release_mobile_evidence','assets','icons','images','golden','golden_sources'}
+          selected=[]
+          for p in sorted(root.rglob('*')):
+              if not p.is_file() or any(x in excludes for x in p.parts) or p.suffix.lower() not in allowed: continue
+              if p.name.startswith('.env') or p.name.endswith('.key'):continue
+              if p.stat().st_size>5_000_000:continue
+              raw=p.read_bytes()
+              try:raw.decode('utf-8')
+              except UnicodeDecodeError:continue
+              selected.append((p.as_posix(),raw))
+          manifest={'type':'IMMUTABLE_SOURCE_ONLY_NO_IMAGES','repository':'meka-create/pokesleep-ai-scan','commit':'f6ad4b69e7f8c8a9918a0e193d6e9a011dff7ab3',
+                    'files':[{'path':n,'bytes':len(raw),'sha256':hashlib.sha256(raw).hexdigest()} for n,raw in selected]}
+          out=pathlib.Path('WORK_SOURCE_SNAPSHOT_NO_IMAGES.zip')
+          with zipfile.ZipFile(out,'w',zipfile.ZIP_DEFLATED,compresslevel=8) as z:
+              for n,raw in selected:z.writestr('repo_snapshot/'+n,raw)
+              z.writestr('repo_snapshot/SOURCE_SHA256_MANIFEST.json',json.dumps(manifest,ensure_ascii=False,indent=2).encode())
+          with zipfile.ZipFile(out) as z:
+              assert z.testzip() is None
+              assert not any(n.lower().endswith(('.png','.jpg','.jpeg','.webp','.gif','.bmp')) for n in z.namelist())
+          print('SOURCE_COUNT',len(selected),'ZIP_BYTES',out.stat().st_size,'SHA256',hashlib.sha256(out.read_bytes()).hexdigest())
+          PY
+      - name: Make source archive available as workflow artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Work_Complete_Source_No_Images_f6ad4b69
+          path: WORK_SOURCE_SNAPSHOT_NO_IMAGES.zip
+          retention-days: 30
+          if-no-files-found: error
