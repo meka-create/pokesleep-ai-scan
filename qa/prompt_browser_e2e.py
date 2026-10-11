@@ -34,6 +34,10 @@ def main():
      page.goto(f'http://127.0.0.1:{server.server_port}/',wait_until='domcontentloaded',timeout=30000)
      prompt=page.locator('#prompt-text').inner_text()
      assert '全画像を実際に解析' in prompt and '他の画像の解析を進め' in prompt,prompt
+     # Real first-visit UX: the TIPS modal intercepts pointer input until closed.
+     page.locator('#tipsDialog[open]').wait_for(state='visible',timeout=10000)
+     page.locator('#tipsClose').click()
+     assert not page.locator('#tipsDialog').evaluate('(el) => el.open')
      start=time.monotonic()
      page.locator('#choose-files').set_input_files([str(x) for x in baseline[:n]])
      page.wait_for_function("() => !document.querySelector('#build').disabled",timeout=120000)
