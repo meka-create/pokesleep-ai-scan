@@ -62,7 +62,6 @@ watchBadge.addEventListener('click',()=>{
 });
 $watch('#update-watch-close').addEventListener('click',()=>watchModal.close?.());
 watchModal.addEventListener('click',event=>{ if(event.target===watchModal)watchModal.close?.(); });
-$watch('#update-watch-close-bottom').addEventListener('click',()=>watchModal.close?.());
 refreshWatch();
 window.addEventListener('focus',refreshWatch);
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)refreshWatch();});
