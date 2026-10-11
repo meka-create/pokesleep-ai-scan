@@ -16,10 +16,20 @@ for file in ('MASTER_DATA.json','CSV_SCHEMA.json'):
  assert v['assetSha256'][file]==canon,file
 assert H(K/'MASTER_DATA.json')=='d60410ba1f92d80c67ca3ff40bc8aa7a2cd51d4c03fc33f9e99fa83bb8e77a38'
 s=(R/'app.js').read_text()
-assert f"KIT_VERSION_RAW_SHA256 = '{H(K/'KIT_VERSION.json')}'" in s
-assert f"SITE_HOTFIX_ID = '{v['siteHotfixId']}'" in s
-assert v['siteHotfixId'] in (R/'sw.js').read_text()
-assert './app.js?v=v23-promoted-release-mode-20261011' in (R/'index.html').read_text()
+# Development kit is retained, unchanged and monitored by the trusted nightly promoter.
+D=R/'release-kit-assets'
+d=json.loads((D/'KIT_VERSION.json').read_text())
+assert len(d['rawAssetSha256'])==16
+assert (d['productionCsvAllowed'],d['compatibilityVerified'],d['masterVerifiedAgainstLive']) == (True,True,True)
+assert H(D/'MASTER_DATA.json')==H(K/'MASTER_DATA.json')
+for name,expected in d['rawAssetSha256'].items(): assert H(D/name)==expected,('release',name)
+assert f"KIT_VERSION_RAW_SHA256 = '{H(D/'KIT_VERSION.json')}'" in s
+assert f"SITE_HOTFIX_ID = '{d['siteHotfixId']}'" in s
+assert d['siteHotfixId'] in (R/'sw.js').read_text()
+assert './app.js?v=v24-release-candidate-separate-kit-20261011' in (R/'index.html').read_text()
+assert "new URL('./release-kit-assets/'+name" in s
+assert "version.productionCsvAllowed!==true" in s
+assert "RELEASE_EVIDENCE.json" in s
 assert 'update-watch-close-bottom' not in (R/'index.html').read_text()
 for f in ('AI_INSTRUCTIONS.md','READING_RULES.md','SPECIES_AUDIT_GUIDE.md'):
  s=(K/f).read_text()
@@ -44,4 +54,4 @@ assert "--user-confirmations" in (K/'RELEASE_EXPORT_GATE.py').read_text()
 assert "user_confirmations_path=args.user_confirmations" in (K/'RELEASE_EXPORT_GATE.py').read_text()
 assert (K/'PROGRESS_PROTOCOL.md').read_text().startswith('# 画像解析・報告の確定運用')
 assert not ('Golden172' in (R/'app.js').read_text())
-print('PASS: 15 raw SHA + 2 canonical + frozen 249 master + 3 HOLD + hotfix pins + one-pass evidence rules, no Golden labels')
+print('PASS: unchanged dev kit HOLD + 16-file release kit pins + frozen 249 master + one-pass evidence rules, no Golden labels')
