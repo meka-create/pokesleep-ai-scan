@@ -1,0 +1,31 @@
+name: STEP2 release candidate pinned upstream lineage (READ ONLY)
+on:
+  push:
+    branches: [step2-release-candidate-isolated-20261011]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  lineage:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/checkout@v4
+        with:
+          ref: 7fc1ba49126a8e2e552ce7c9f58f062e388da456
+          path: trusted_tools
+          persist-credentials: false
+      - uses: actions/checkout@v4
+        with:
+          repository: nitoyon/pokesleep-tool
+          ref: 4001a25749e461db4957590dea39bd060bc22711
+          path: upstream_verification
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: independently project and compare all old species
+        run: python qa/release_upstream_lineage.py
