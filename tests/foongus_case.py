@@ -152,6 +152,10 @@ def assert_ui_zip(site,report):
             page=browser.new_page(accept_downloads=True)
             errors=[];page.on('pageerror',lambda exc: errors.append(str(exc)))
             page.goto(f'http://127.0.0.1:{httpd.server_port}/',wait_until='domcontentloaded',timeout=40000)
+            # Real first-visit UX opens an onboarding TIPS modal. Close it as a user would.
+            page.locator('#tipsDialog[open]').wait_for(state='visible',timeout=5000)
+            page.locator('#tipsClose').click(timeout=5000)
+            page.locator('#tipsDialog[open]').wait_for(state='hidden',timeout=5000)
             page.locator('#choose-files').set_input_files({'name':'test.png','mimeType':'image/png','buffer':tiny_png()})
             page.locator('#build').wait_for(state='visible',timeout=10000)
             page.wait_for_function("document.querySelector('#build') && !document.querySelector('#build').disabled",timeout=20000)
