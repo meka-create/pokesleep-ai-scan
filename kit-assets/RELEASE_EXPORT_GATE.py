@@ -3,6 +3,8 @@
 
 Separately enforces release evidence, a user approval record, species audit,
 Validator's real (non-prototype) guard and integrity-bound row mapping.
+Form-size user confirmations are optional but, when needed, must be passed via
+--user-confirmations to the same SpeciesAudit validation as prototype output.
 The evidence file is a locally supplied *review record*, NOT cryptographic
 authentication of the user's chat identity. An independent human review is
 mandatory before producing an approved release bundle.
@@ -60,7 +62,7 @@ def release_preflight(package_dir,evidence_file,explicit_release):
     return version,evidence
 
 def run(package_dir, records_path, observations_path, output_dir, evidence_file=None,
-        *, explicit_release=False):
+        *, explicit_release=False, user_confirmations_path=None):
     pkg=pathlib.Path(package_dir).resolve()
     target=pathlib.Path(output_dir).resolve();target.mkdir(parents=True,exist_ok=True)
     # Do not let an earlier apparent successful run survive any failed attempt.
@@ -70,7 +72,8 @@ def run(package_dir, records_path, observations_path, output_dir, evidence_file=
     manifest=load_json(pkg/'INPUT_MANIFEST.json')
     species=audit(pkg,pathlib.Path(records_path),
                   pathlib.Path(observations_path) if observations_path else None,
-                  allow_release=True)
+                  allow_release=True,
+                  user_confirmations_path=pathlib.Path(user_confirmations_path) if user_confirmations_path else None)
     if species['total']!=manifest['inputImageCount'] or species['hardConflicts'] or species['identityReviewRecommendations'] or species['speciesAutoChanges'] or species['candidateRemovalsByNumeric']:
         raise ValueError('SpeciesAudit conflict/review pending; HOLD')
     data,report=build(records,manifest,load_json(pkg/'MASTER_DATA.json'),
@@ -103,13 +106,16 @@ def main():
     p.add_argument('--package-dir',type=pathlib.Path,default=pathlib.Path('.'))
     p.add_argument('--records',type=pathlib.Path,required=True)
     p.add_argument('--observations',type=pathlib.Path)
+    p.add_argument('--user-confirmations',type=pathlib.Path,
+                   help='User in-game form-size confirmation records (verified by SpeciesAudit)')
     p.add_argument('--output-dir',type=pathlib.Path,required=True)
     p.add_argument('--release-evidence',type=pathlib.Path)
     p.add_argument('--release-authorized',action='store_true')
     args=p.parse_args()
     try:
         print(json.dumps(run(args.package_dir,args.records,args.observations,args.output_dir,
-          args.release_evidence,explicit_release=args.release_authorized),ensure_ascii=False,indent=2))
+          args.release_evidence,explicit_release=args.release_authorized,
+          user_confirmations_path=args.user_confirmations),ensure_ascii=False,indent=2))
         return 0
     except (ValueError,ValidationError,OSError,KeyError,TypeError,IndexError) as e:
         print('PRODUCTION CSV HOLD: '+str(e),file=sys.stderr)
