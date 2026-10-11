@@ -170,7 +170,13 @@ def assert_ui_zip(site,report):
                 v=json.loads(z.read('KIT_VERSION.json'))
                 need(len(master['pokemon'])==249 and all(any(x['name_en']==s for x in master['pokemon']) for s in ADDED),'ZIP_NOT_UPDATED_249')
                 need(v['productionCsvAllowed'] is False,'ZIP_NOT_HOLD')
-                need(z.read('images/0001_test.png')==tiny_png() or any(z.read(n)==tiny_png() for n in names if n.endswith('.png')),'IMAGE_BYTES_BAD')
+                manifest=json.loads(z.read('INPUT_MANIFEST.json'))
+                entries=manifest['images']
+                need(len(entries)==1,'IMAGE_MANIFEST_COUNT_BAD')
+                image_entry=entries[0]
+                need(image_entry['path'] in names,'IMAGE_MANIFEST_PATH_MISSING')
+                need(z.read(image_entry['path'])==tiny_png(),'IMAGE_BYTES_BAD')
+                need(image_entry['sha256']==sha(tiny_png()),'IMAGE_SHA256_BAD')
             need(not errors,'BROWSER_JS_ERRORS:'+str(errors))
             browser.close()
     finally:
