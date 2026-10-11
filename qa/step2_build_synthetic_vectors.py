@@ -79,6 +79,27 @@ emit_results['mew']=emit('07_mew_alone.csv',[row(next(p for p in POKEMON if p['n
 emit_results['darkrai']=emit('08_darkrai_alone.csv',[row(next(p for p in POKEMON if p['name']=='ダークライ'),0,variant=True)])
 emit_results['toxtricity']=emit('09_toxtricity_forms.csv',[row(p,i,variant=True) for i,p in enumerate(POKEMON) if p['name'].startswith('ストリンダー (')])
 emit_results['pumpkin']=emit('10_pumpkin_forms.csv',[row(p,i,variant=True) for i,p in enumerate(POKEMON) if p['name'].startswith(('バケッチャ (','パンプジン ('))])
+emit_results['nature_optional']=emit('11_natures_optionals.csv',[
+    (lambda r, n, i: (r.__setitem__(8,n),r.__setitem__(14,(0,200,500,1000,2000)[i%5]),r.__setitem__(15,i%2),r)[-1])(
+       row(regular[i],i,variant=True), n, i)
+    for i,n in enumerate(sorted(NATURES))])
+mew=next(p for p in POKEMON if p['name']=='ミュウ')
+darkrai=next(p for p in POKEMON if p['name']=='ダークライ')
+mew_cases=[]
+for i,label in enumerate(SCHEMA['mewVersatileCsvLabels'].values()):
+    r=row(mew,i,variant=True)
+    r[7]=label
+    mew_cases.append(r)
+emit_results['mew_skill_choices']=emit('12_mew_all_versatile.csv',mew_cases)
+blank_mew=row(mew,101,variant=True)
+blank_mew[6]=''
+blank_mew[13]=''
+blank_darkrai=row(darkrai,102,variant=True)
+blank_darkrai[5]=''
+blank_darkrai[6]=''
+blank_darkrai[12]=''
+blank_darkrai[13]=''
+emit_results['mythical_blanks']=emit('13_mythical_blank_fields.csv',[blank_mew,blank_darkrai])
 emit_results['quoting']=emit('06_quoting_and_unicode.csv',[
    row(regular[0],400,explicit_name='試験,一'),
    row(regular[1],401,explicit_name='試験"二'),

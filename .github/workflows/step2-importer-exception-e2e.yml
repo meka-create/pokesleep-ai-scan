@@ -1,0 +1,68 @@
+name: STEP2 actual importer exceptional fields verification (READ ONLY)
+on:
+  push:
+    branches: [step2-importer-exception-e2e-20261011]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  importer-compatibility:
+    runs-on: ubuntu-latest
+    timeout-minutes: 75
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Browser prerequisites
+        run: |
+          python -m pip install playwright==1.56.0
+          python -m playwright install --with-deps chromium
+      - name: Generate independent synthetic master-derived fixtures
+        run: |
+          set -euo pipefail
+          python qa/step2_build_synthetic_vectors.py
+          python -m py_compile kit-assets/*.py
+          node --check app.js
+      - name: Probe ACTUAL published pokesleep-tool import/export across test cases
+        shell: bash
+        run: |
+          set +e
+          set -uo pipefail
+          failed=0
+          for f in step2_evidence/fixtures/10_*.csv step2_evidence/fixtures/11_*.csv step2_evidence/fixtures/12_*.csv step2_evidence/fixtures/13_*.csv; do
+            case="$(basename "$f" .csv)"
+            echo "::group::Importer $case"
+            python probe/run_import_probe.py --input-csv "$f" --out "step2_evidence/roundtrips/$case"
+            rc=$?
+            python - "$case" <<'PY'
+          import json, pathlib, sys
+          case=sys.argv[1]
+          p=pathlib.Path('step2_evidence/roundtrips')/case/'PROBE_RESULT.json'
+          if not p.exists(): print('CASE_REPORT_MISSING',case)
+          else:
+            r=json.loads(p.read_text())
+            print('CASE_STATUS',case,json.dumps({
+              'status':r.get('status'),'reason':r.get('reason'),'rowCount':r.get('inputCsvRowCount'),
+              'realImporterExecuted':r.get('upstreamImporterExecuted'),
+              'exactRoundtrip':r.get('importRoundTripExact'),
+              'importValidation':r.get('importValidation'),
+              'steps':r.get('steps',[]), 'uiInventory':r.get('uiInventory',[])[:8],
+              'errors':r.get('errors',[])[:1]},ensure_ascii=False))
+          PY
+            if [ "$rc" -ne 0 ]; then echo "::error title=Importer not proven::$case E2E failed (rc=$rc)";failed=1; fi
+            echo "::endgroup::"
+          done
+          exit "$failed"
+      - name: Keep importer proof and screenshots WITHOUT release
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: STEP2_Exceptions_Natures_Blanks_Importer_Evidence_HOLD
+          path: step2_evidence/
+          retention-days: 30
+          if-no-files-found: error
