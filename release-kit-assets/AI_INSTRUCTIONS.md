@@ -5,7 +5,7 @@
 画像全件の実視覚解析、要確認時のユーザー質問、SpeciesAudit、Validator、行対応SHAを守り、**RELEASE_EXPORT_GATE.py --release-authorized** の統合PASS後だけ `RELEASE_GATE_STATUS.json` の `csvFilename` で指定された日時付きCSV を納品する。AI誤読リスクが残るので入力前確認を案内し、未検証CSVを出さない。
 
 ## 本番CSVファイル名・上書き防止
-統合ゲートの出力ファイルは `pokesleep_import_YYYYMMDD_HHMMSS_SSS.csv`（日本時間、ミリ秒付き）。検証後に生成された `RELEASE_GATE_STATUS.json` の `csvFilename` を読み取り、指定された**実在するCSVファイル**だけをユーザーに渡す。ゲートを実行できなければ日時を付けた仮CSVを自作しない。同一時刻名が存在するときは末尾 `_2` 等で別名保存。以前のCSVは新しいPASSの代用品にしない。
+統合ゲートの出力ファイルは `pokesleep_import_YYYYMMDD_HHMM.csv`（日本時間、分まで）。検証後に生成された `RELEASE_GATE_STATUS.json` の `csvFilename` を読み取り、指定された**実在するCSVファイル**だけをユーザーに渡す。ゲートを実行できなければ日時を付けた仮CSVを自作しない。同一時刻名が存在するときは末尾 `_2` 等で別名保存。以前のCSVは新しいPASSの代用品にしない。
 
 ## 短い添え文でも同梱指示すべてを実施
 

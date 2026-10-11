@@ -45,7 +45,7 @@ with sync_playwright() as p:
             page.locator('#build').click()
         download=info.value
         result['suggestedFilename']=download.suggested_filename
-        assert re.fullmatch(r'AI_Bukkomi_Scan_1images_\\d{8}_\\d{6}_\\d{3}\\.zip',download.suggested_filename)
+        assert re.fullmatch(r'AI_Bukkomi_Scan_1images_[0-9]{8}_[0-9]{4}(?:_[0-9]+)?[.]zip',download.suggested_filename)
         path=OUT/'mobile_download.zip'
         download.save_as(str(path))
         result['downloadObserved']=True

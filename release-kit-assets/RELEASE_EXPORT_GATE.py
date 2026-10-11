@@ -30,7 +30,7 @@ JST=timezone(timedelta(hours=9))
 def timestamped_csv_name(output_dir, now=None):
     """Return a unique CSV basename in Japan local time; never overwrite old CSVs."""
     dt=now if now is not None else datetime.now(JST)
-    suffix=dt.strftime('%Y%m%d_%H%M%S_')+f'{dt.microsecond//1000:03d}'
+    suffix=dt.astimezone(JST).strftime('%Y%m%d_%H%M')
     stem=f'pokesleep_import_{suffix}'
     number=1
     while True:

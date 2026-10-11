@@ -54,7 +54,7 @@ with tempfile.TemporaryDirectory(prefix='release_gate_candidate_') as td:
     assert result['status']=='PASS',result
     assert result['included']==1 and result['excluded']==0
     csv_filename=result['csvFilename']
-    assert re.fullmatch(r'pokesleep_import_\\d{8}_\\d{6}_\\d{3}(?:_\\d+)?\\.csv',csv_filename),csv_filename
+    assert re.fullmatch(r'pokesleep_import_[0-9]{8}_[0-9]{4}(?:_[0-9]+)?[.]csv',csv_filename),csv_filename
     assert not (out/CSV_NAME).exists()
     csv_data=(out/csv_filename).read_bytes()
     rows=list(csv.reader(io.StringIO(csv_data.decode('utf-8'),newline=''),strict=True))

@@ -13,7 +13,7 @@ const KIT_FILES = [
 // Any old/mixed/corrupt kit must fail closed BEFORE makeZip/saveZip.
 const SITE_HOTFIX_ID = 'v26-timestamped-exports-20261011';
 const EXPECTED_KIT_VERSION = '0.12.1-release';
-const KIT_VERSION_RAW_SHA256 = 'ac182edf52068a5ac5d23cb6a76035b0cb6005193b59136d64b8f899651cb169';
+const KIT_VERSION_RAW_SHA256 = '3b0a40111b923c28682c3775e1d9c8aa699ea1b802dcc47227d7bebe2fc100ad';
 const FILES = new Map();
 let seq = 0, lastZip = null, lastName = '', busy = false, hashing = 0, hashError = false;
 const $ = s => document.querySelector(s);
@@ -23,12 +23,18 @@ const allowed = /\.(png|jpg|jpeg|webp)$/i;
 const MAX_ARCHIVE_BYTES = 300 * 1024 * 1024; // technical browser-memory guard, NOT empirically verified AI capacity
 function fmt(bytes) { return (bytes / 1024 / 1024).toFixed(1) + ' MB'; }
 // Local browser clock, stamped when the ZIP bytes are actually ready.
-// Milliseconds avoid overwrites during rapid repeated builds.
+// Export within the same minute receives a suffix rather than overwriting.
+const zipNameCounts = new Map();
 function timestampForFilename(date=new Date()) {
   const pad=(n,width=2)=>String(n).padStart(width,'0');
   return pad(date.getFullYear(),4)+pad(date.getMonth()+1)+pad(date.getDate())
-    +'_'+pad(date.getHours())+pad(date.getMinutes())+pad(date.getSeconds())
-    +'_'+pad(date.getMilliseconds(),3);
+    +'_'+pad(date.getHours())+pad(date.getMinutes());
+}
+function nextZipFilename(imageCount) {
+  const stem='AI_Bukkomi_Scan_'+imageCount+'images_'+timestampForFilename();
+  const number=(zipNameCounts.get(stem)||0)+1;
+  zipNameCounts.set(stem,number);
+  return stem+(number===1?'':'_'+number)+'.zip';
 }
 function announce(msg, error=false) { status.textContent=msg; status.classList.toggle('error',error); }
 function setBusy(b) { busy=b; buildButton.disabled = b || hashing > 0 || hashError || !FILES.size; fileInput.disabled=b; buildButton.innerHTML=b?'ZIPを作成しています…':'<span>AI提出用ZIPを作成</span><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M12 3v13m-5-5 5 5 5-5M4 19h16"/></svg>'; }
@@ -236,7 +242,7 @@ async function build() {
     archiveEntries.push(...kitData,{name:'INPUT_MANIFEST.json',bytes:new TextEncoder().encode(JSON.stringify(doc,null,2)+'\n')});
     setZipProgress(90,'ZIPを作成中…');announce('ZIPを作成しています…');
     lastZip=makeZip(archiveEntries);
-    lastName='AI_Bukkomi_Scan_'+chosen.length+'images_'+timestampForFilename()+'.zip';
+    lastName=nextZipFilename(chosen.length);
     $('#archive-name').textContent=lastName;
     $('#archive-count').textContent=chosen.length+'枚 / '+fmt(lastZip.size);
     saveZip(lastZip,lastName);

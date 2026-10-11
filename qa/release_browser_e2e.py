@@ -43,7 +43,7 @@ def main():
      page.wait_for_function("() => !document.querySelector('#build').disabled",timeout=120000)
      with page.expect_download(timeout=120000) as d:page.locator('#build').click()
      dl=d.value;target=here/f'{n}.zip';dl.save_as(str(target))
-     assert re.fullmatch(rf'AI_Bukkomi_Scan_{n}images_\\d{{8}}_\\d{{6}}_\\d{{3}}\\.zip',dl.suggested_filename),dl.suggested_filename
+     assert re.fullmatch(rf'AI_Bukkomi_Scan_{n}images_[0-9]{{8}}_[0-9]{{4}}(?:_[0-9]+)?[.]zip',dl.suggested_filename),dl.suggested_filename
      with zipfile.ZipFile(target) as z:
       assert z.testzip() is None
       names=z.namelist();assert len(names)==n+18,(n,len(names))
