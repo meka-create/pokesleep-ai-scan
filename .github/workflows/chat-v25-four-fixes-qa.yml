@@ -37,7 +37,7 @@ jobs:
           python -m unittest discover -s trusted_tools/tests -p 'test_upstream_sync.py' -v
           python -m unittest discover -s trusted_tools/tests -p 'test_import_compat_gate.py' -v
           python -m unittest discover -s trusted_tools/tests -p 'test_verified_auto_promotion.py' -v
-      - name: Full release gate: valid CSV + no-approval + tampered-proof rejections
+      - name: "Full release gate: valid CSV + no-approval + tampered-proof rejections"
         run: python qa/release_candidate_gate_smoke.py
       - name: Chromium setup
         run: |
