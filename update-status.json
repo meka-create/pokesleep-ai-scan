@@ -1,12 +1,13 @@
 {
-  "activeSourceCommit": null,
-  "checkedAt": "2026-10-11T01:52:21Z",
-  "details": "現在の公開マスターと上流の対象データに差分はありません。本番CSVのHOLD状態は継続しています。",
-  "message": "上流データの更新確認は正常です",
-  "productionCsvAllowed": false,
-  "reasonCode": "NO_CHANGE",
-  "runUrl": "https://github.com/meka-create/pokesleep-ai-scan/actions/runs/38103253210",
   "schemaVersion": "pokesleep-upstream-status-v1",
   "state": "healthy",
-  "upstreamCommit": "f394104a0a9d44335a8697143464e5add9815643"
+  "checkedAt": "2026-10-11T22:38:22.677010Z",
+  "upstreamCommit": "f394104a0a9d44335a8697143464e5add9815643",
+  "activeSourceCommit": null,
+  "reasonCode": "UPSTREAM_STRUCTURE_MATCH",
+  "message": "上流データの確認が完了しました。",
+  "details": "構造上の変更は見つかっていません。CSV互換性は未検証です。",
+  "runUrl": null,
+  "productionCsvAllowed": false,
+  "monitorMode": "READ_ONLY_NO_IMPORTER_NO_AUTOPROMOTION"
 }
