@@ -1,4 +1,4 @@
-name: AI Scan v24 published mobile real browser ZIP E2E (READ ONLY)
+name: AI Scan published release mobile real browser ZIP E2E (READ ONLY)
 on:
   push:
     branches: [main]
@@ -29,7 +29,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: AI_Scan_v24_Actual_Public_Mobile_Evidence
+          name: AI_Scan_Current_Public_Mobile_Evidence
           path: release_mobile_evidence/
           if-no-files-found: warn
           retention-days: 30

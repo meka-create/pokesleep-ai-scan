@@ -68,7 +68,10 @@ with sync_playwright() as p:
             result['kitFiles']=len(z.namelist())-2
             assert result['kitFiles']==17
             assert 'RELEASE_EVIDENCE.json' in z.namelist()
-            assert kit['siteHotfixId']=='v26-timestamped-exports-20261011'
+            # Verify the deployed ZIP against the CURRENT checked-out release
+            # pin. A hard-coded older tag would break every future release.
+            expected_kit=json.loads((ROOT/'release-kit-assets/KIT_VERSION.json').read_text(encoding='utf-8'))
+            assert kit['siteHotfixId']==expected_kit['siteHotfixId']
         page.screenshot(path=str(OUT/'03_mobile_ready.png'),full_page=True)
     finally:
         browser.close()

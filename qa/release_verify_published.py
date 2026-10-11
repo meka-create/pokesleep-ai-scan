@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Independent end-to-end public URL audit for released AI Scan v24 assets.
+"""Independent end-to-end public URL audit for current AI Scan release assets.
 
 Fetches the actual GitHub Pages URL. Never uploads photos or produces CSV.
 Retries CDN propagation; refuses any mixed kit or stale frontend.
