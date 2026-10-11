@@ -63,6 +63,20 @@ def main():
       assert z.read('RELEASE_EVIDENCE.json')
       assert '右端の食材3は' in reading and '枠色・隣枠の内容だけでランクや効果を決めない' in reading
       assert 'なお複数候補が残れば推測で確定せずユーザーに確認する' in reading
+     if n==10:
+      # Same-minute repeated creation must never reuse a filename.
+      with page.expect_download(timeout=120000) as another:
+       page.locator('#build').click()
+      dl2=another.value
+      assert dl2.suggested_filename!=dl.suggested_filename,(dl.suggested_filename,dl2.suggested_filename)
+      assert re.fullmatch(r'AI_Bukkomi_Scan_10images_[0-9]{8}_[0-9]{4}(?:_[0-9]+)?[.]zip',dl2.suggested_filename)
+      if dl2.suggested_filename[:-6]==dl.suggested_filename[:-4]:
+       assert dl2.suggested_filename==dl.suggested_filename[:-4]+'_2.zip'
+      target2=here/'10_repeat.zip'
+      dl2.save_as(str(target2))
+      with zipfile.ZipFile(target2) as z2:
+       assert z2.testzip() is None
+       assert len(z2.namelist())==28
      assert not errors,errors
      result={'n':n,'zipBytes':target.stat().st_size,'elapsedSeconds':round(time.monotonic()-start,2),'entries':n+18,'downloadFilename':dl.suggested_filename,'originalImageSha256Match':True,'kitShaMatch':True,'jsErrors':0}
      report['sizes'].append(result);print('PASS',result,flush=True);context.close()
