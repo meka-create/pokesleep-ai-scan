@@ -31,6 +31,7 @@ jobs:
       - name: Probe ACTUAL published pokesleep-tool import/export across test cases
         shell: bash
         run: |
+          set +e
           set -uo pipefail
           failed=0
           for f in step2_evidence/fixtures/0*.csv; do
@@ -50,9 +51,10 @@ jobs:
               'realImporterExecuted':r.get('upstreamImporterExecuted'),
               'exactRoundtrip':r.get('importRoundTripExact'),
               'importValidation':r.get('importValidation'),
+              'steps':r.get('steps',[]), 'uiInventory':r.get('uiInventory',[])[:8],
               'errors':r.get('errors',[])[:1]},ensure_ascii=False))
           PY
-            if [ "$rc" -ne 0 ]; then echo "::error title=Importer incompatible::$case E2E failed (rc=$rc)";failed=1; fi
+            if [ "$rc" -ne 0 ]; then echo "::error title=Importer not proven::$case E2E failed (rc=$rc)";failed=1; fi
             echo "::endgroup::"
           done
           exit "$failed"

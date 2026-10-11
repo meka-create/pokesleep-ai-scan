@@ -75,6 +75,10 @@ special=[p for p in POKEMON if p['name'] in ('ミュウ','ダークライ') or '
 emit_results['forms']=emit('03_forms_and_mythical.csv',[row(p,i,variant=True) for i,p in enumerate(special)])
 emit_results['all']=emit('04_all_master_species.csv',[row(p,i,variant=True) for i,p in enumerate(POKEMON)])
 emit_results['subskills']=emit('05_all_subskill_words.csv',[row(regular[i],i,variant=True) for i in range(len(SKILLS))])
+emit_results['mew']=emit('07_mew_alone.csv',[row(next(p for p in POKEMON if p['name']=='ミュウ'),0,variant=True)])
+emit_results['darkrai']=emit('08_darkrai_alone.csv',[row(next(p for p in POKEMON if p['name']=='ダークライ'),0,variant=True)])
+emit_results['toxtricity']=emit('09_toxtricity_forms.csv',[row(p,i,variant=True) for i,p in enumerate(POKEMON) if p['name'].startswith('ストリンダー (')])
+emit_results['pumpkin']=emit('10_pumpkin_forms.csv',[row(p,i,variant=True) for i,p in enumerate(POKEMON) if p['name'].startswith(('バケッチャ (','パンプジン ('))])
 emit_results['quoting']=emit('06_quoting_and_unicode.csv',[
    row(regular[0],400,explicit_name='試験,一'),
    row(regular[1],401,explicit_name='試験"二'),
