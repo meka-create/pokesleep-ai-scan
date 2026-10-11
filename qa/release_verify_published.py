@@ -14,7 +14,7 @@ files=['index.html','app.js','sw.js','release-kit-assets/KIT_VERSION.json']
 files+=['release-kit-assets/'+name for name in sorted(v['rawAssetSha256'])]
 files+=['kit-assets/KIT_VERSION.json','kit-assets/MASTER_DATA.json']
 expected={path:sha((ROOT/path).read_bytes()) for path in files}
-assert len(files)==23
+assert len(files)==22
 assert v['productionCsvAllowed'] is True and v['compatibilityVerified'] is True
 assert len(v['rawAssetSha256'])==16
 old=json.loads((ROOT/'kit-assets/KIT_VERSION.json').read_text())
