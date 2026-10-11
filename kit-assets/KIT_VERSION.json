@@ -19,16 +19,16 @@
     "READING_RULES.md": "aa3e5497e2f3e0c069cd426e5162132b059f500311964379159a62a640840bdf",
     "RECORDS_TEMPLATE.json": "ca80fd2d0866321fca658e8551f07dd722534fe080e8a4b6102d2e514143d070",
     "RELEASE_EXPORT_GATE.py": "fbc8c9325a8bc2b051b2ac7d9a354980dfe4cd8c2c83ac6e78565beaba42c56c",
-    "SPECIES_AUDIT.py": "c7de1c475c3153d1026c943368d825e85815dc3c0eab12daa68a1b75891f4d09",
+    "SPECIES_AUDIT.py": "1dda55c1b843f02017f4d52b2d65191d98689f8b83a7cd40a444d931fad7e683",
     "SPECIES_AUDIT_GUIDE.md": "58f7fd8071b4377d5a5c547bff63766763c72039363c31debc799f0baa447671",
     "SPECIES_OBSERVATIONS_TEMPLATE.json": "ca459af459d719cfe7d136e054aaee81c25f8d1f81d90ebe553c7c682e65e3da",
     "START_HERE.md": "306bfb2c8725ba5417baca80b419ca01b7b0d149c8e9bc31deb59a1de718b8a5",
     "VALIDATOR.py": "173d8c7a9f252e9e12749547be4d666667abb7c5c2a41ec430fa7b7a9261a13d",
-    "numeric_observer.py": "c279999fad4f00cd2b035205c6f10bc9f419bfa55a216841ce942c6ac0da58d1",
-    "species_evidence_lab.py": "bef09eb99064805b462800270fb731168084106e01dbf084a48812474fd48e8f"
+    "numeric_observer.py": "05c3932380ee038574b51f851af994b90e8798d2f9acf23fea9afc0c31f4b97b",
+    "species_evidence_lab.py": "aa397228df5ef040aa7c2d8edfea5774eac79e6d56f8f91d5216e3e088541a76"
   },
-  "siteHotfixId": "v08c-auditfix-20261010-r2-ai-bukkomi-scan-step1-midfix1",
+  "siteHotfixId": "v18-plus-promotion-policy-candidate-HOLD",
   "sourceCommit": null,
-  "status": "PROTOTYPE ONLY / HOLD - AIぶっこみスキャン STEP1 intermediate audit: evidence/CLI hold fix; UI pending user review",
+  "status": "PROTOTYPE ONLY / HOLD - additive master policy isolated candidate; no automatic public promotion authorized",
   "upstream": "https://github.com/nitoyon/pokesleep-tool"
 }

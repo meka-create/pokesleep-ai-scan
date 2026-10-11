@@ -137,14 +137,16 @@ def main():
     p.add_argument('--output',type=pathlib.Path, required=True)
     args=p.parse_args()
     master=json.loads(args.master.read_text(encoding='utf-8'))
-    if len(master['pokemon'])!=249:
-        raise ValueError('expected exactly the pinned 249 species; abort on unexpected master')
+    from SPECIES_AUDIT import verify_bundle
+    verified, _ = verify_bundle(args.master.parent)
+    if master != verified:
+        raise ValueError('unapproved master; HOLD')
     results=[y for f in args.csv for y in run_csv(master,f)]
     summary=dict(Counter(x['status'] for x in results))
     output={'mode':'READ_ONLY_PROTOTYPE_HOLD','masterSpecies':len(master['pokemon']),
             'total':len(results),'statusCounts':summary,'results':results}
     args.output.write_text(json.dumps(output,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
-    print(f"AUDIT {len(results)} rows / 249 master species / {summary}")
+    print(f"AUDIT {len(results)} rows / {len(master['pokemon'])} master species / {summary}")
     for x in results:
         if x['status']!='UNIQUE_BY_DATA':
             print(f"  {x['nickname']} {x['reportedSpecies']}: {x['status']} "+

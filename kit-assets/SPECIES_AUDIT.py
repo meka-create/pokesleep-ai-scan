@@ -13,7 +13,7 @@ import pathlib
 import sys
 from collections import Counter
 from species_evidence_lab import evaluate
-from numeric_observer import observed_numeric, current_species_carry_baseline, PINNED_LEGACY_MASTER_SHA256
+from numeric_observer import observed_numeric, current_species_carry_baseline, verify_additive_legacy_master, LEGACY_BASE_NAMES
 
 FINGERPRINT_FILES = ('MASTER_DATA.json', 'CSV_SCHEMA.json')
 
@@ -238,11 +238,14 @@ def verify_bundle(pkg, *, allow_release=False):
         actual=hashlib.sha256(canonical).hexdigest()
         if actual != version.get('assetSha256', {}).get(name):
             raise ValueError('Canonical asset sha mismatch: '+name)
+    # Match the trusted auditor's Python bytes to the version's approved pin.
+    for code_file in ('SPECIES_AUDIT.py','numeric_observer.py'):
+        expected=version.get('rawAssetSha256',{}).get(code_file)
+        if expected != hashlib.sha256((pkg/code_file).read_bytes()).hexdigest():
+            raise ValueError('Auditor code/manifest digest mismatch: '+code_file)
     master_raw=(pkg/'MASTER_DATA.json').read_bytes()
-    if hashlib.sha256(master_raw).hexdigest()!=PINNED_LEGACY_MASTER_SHA256:
-        raise ValueError('Unreviewed carry master fingerprint; HOLD')
     master=json.loads(master_raw.decode('utf-8'))
-    if len(master.get('pokemon', []))!=249: raise ValueError('Unexpected master species count')
+    verify_additive_legacy_master(master,master_raw,version)
     return master,version
 
 
@@ -412,7 +415,11 @@ def audit_record(master, dec, obs, user_form_confirmation=None):
     report['highRiskEvolutionVisualReviewRecommended']=(
         species in HIGH_RISK_EVOLUTION_SPECIES and
         obs.get('speciesVisualConfirmed') is not True)
+    new_candidates={p['name'] for p in master['pokemon'] if p['name_en'] not in LEGACY_BASE_NAMES}
+    report['newMasterSpeciesReviewRecommended']=(
+        bool(new_candidates & set(basic['candidates'])) and obs.get('speciesVisualConfirmed') is not True)
     report['speciesIdentityReviewRecommended']=(
+        report['newMasterSpeciesReviewRecommended'] or
         report['highRiskEvolutionVisualReviewRecommended'] or
         (numeric_stage_conflict and not in_game_stage_size_confirmed) or
         (is_four_size_form and not form_verified) or
