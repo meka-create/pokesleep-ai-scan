@@ -1,0 +1,43 @@
+name: AI Scan prompt and 172-zip real browser regression (READ ONLY)
+on:
+  push:
+    branches: [prompt-ops-review-20261011]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: ai-scan-prompt-ops-qa-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  independent-qa:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Install browser dependencies
+        run: |
+          python -m pip install playwright==1.56.0 Pillow==11.3.0
+          python -m playwright install --with-deps chromium
+      - name: Check prompt contracts, old master, HOLD and every kit hash
+        run: |
+          python qa/prompt_contract_test.py
+          python -m py_compile kit-assets/*.py
+          node --check app.js
+          node --check sw.js
+      - name: Real HTTP Chromium ZIPs for 10, 30, 100, 172 unchanged images
+        run: python qa/prompt_browser_e2e.py
+      - name: Archive proof, no publication
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: PromptOps_RealBrowser_Evidence_HOLD
+          path: qa/BROWSER_ZIP_RESULTS.json
+          retention-days: 30
+          if-no-files-found: warn
