@@ -18,7 +18,10 @@ class PostpublishAuditTests(unittest.TestCase):
             if p.is_file():shutil.copyfile(p,self.root/'kit-assets'/p.name)
         self.now=datetime(2026,10,10,6,0,tzinfo=timezone.utc)
         s=audit.load(self.root/'update-status.json')
-        s.update(checkedAt='2026-10-10T04:46:48Z',state='healthy',reasonCode='NO_CHANGE',
+        # Fixture must not inherit the live branch status/source SHA, which can
+        # change independently while this test is running in GitHub Actions.
+        s.update(upstreamCommit=None,activeSourceCommit=None,
+                 checkedAt='2026-10-10T04:46:48Z',state='healthy',reasonCode='NO_CHANGE',
                  runUrl='https://github.com/meka-create/pokesleep-ai-scan/actions/runs/38025210341')
         (self.root/'update-status.json').write_text(json.dumps(s)+'\n')
         self.runs={'workflow_runs':[{'id':38025210341,'status':'completed','conclusion':'success',
