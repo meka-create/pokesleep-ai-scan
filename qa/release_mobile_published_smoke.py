@@ -9,6 +9,7 @@ import io
 import json
 import pathlib
 import zipfile
+import re
 from playwright.sync_api import sync_playwright
 
 ROOT=pathlib.Path(__file__).resolve().parents[1]
@@ -44,6 +45,7 @@ with sync_playwright() as p:
             page.locator('#build').click()
         download=info.value
         result['suggestedFilename']=download.suggested_filename
+        assert re.fullmatch(r'AI_Bukkomi_Scan_1images_\\d{8}_\\d{6}_\\d{3}\\.zip',download.suggested_filename)
         path=OUT/'mobile_download.zip'
         download.save_as(str(path))
         result['downloadObserved']=True
@@ -66,7 +68,7 @@ with sync_playwright() as p:
             result['kitFiles']=len(z.namelist())-2
             assert result['kitFiles']==17
             assert 'RELEASE_EVIDENCE.json' in z.namelist()
-            assert kit['siteHotfixId']=='v24-production-separate-kit-20261011'
+            assert kit['siteHotfixId']=='v26-timestamped-exports-20261011'
         page.screenshot(path=str(OUT/'03_mobile_ready.png'),full_page=True)
     finally:
         browser.close()

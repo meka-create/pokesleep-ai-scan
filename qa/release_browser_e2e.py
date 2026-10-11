@@ -1,7 +1,7 @@
 """Real HTTP/Chromium packaging regression for AI Scan prompt-only candidate.
 Does not parse/guess Pokémon screenshots and validates a release-capable candidate only in isolated CI.
 """
-import zipfile,hashlib,json,tempfile,time,threading,functools,http.server,os
+import zipfile,hashlib,json,tempfile,time,threading,functools,http.server,os,re
 from pathlib import Path
 from playwright.sync_api import sync_playwright
 from PIL import Image
@@ -43,6 +43,7 @@ def main():
      page.wait_for_function("() => !document.querySelector('#build').disabled",timeout=120000)
      with page.expect_download(timeout=120000) as d:page.locator('#build').click()
      dl=d.value;target=here/f'{n}.zip';dl.save_as(str(target))
+     assert re.fullmatch(rf'AI_Bukkomi_Scan_{n}images_\\d{{8}}_\\d{{6}}_\\d{{3}}\\.zip',dl.suggested_filename),dl.suggested_filename
      with zipfile.ZipFile(target) as z:
       assert z.testzip() is None
       names=z.namelist();assert len(names)==n+18,(n,len(names))
@@ -63,7 +64,7 @@ def main():
       assert '右端の食材3は' in reading and '枠色・隣枠の内容だけでランクや効果を決めない' in reading
       assert 'なお複数候補が残れば推測で確定せずユーザーに確認する' in reading
      assert not errors,errors
-     result={'n':n,'zipBytes':target.stat().st_size,'elapsedSeconds':round(time.monotonic()-start,2),'entries':n+18,'originalImageSha256Match':True,'kitShaMatch':True,'jsErrors':0}
+     result={'n':n,'zipBytes':target.stat().st_size,'elapsedSeconds':round(time.monotonic()-start,2),'entries':n+18,'downloadFilename':dl.suggested_filename,'originalImageSha256Match':True,'kitShaMatch':True,'jsErrors':0}
      report['sizes'].append(result);print('PASS',result,flush=True);context.close()
     b.close()
   finally:

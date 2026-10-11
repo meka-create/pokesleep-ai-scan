@@ -5,7 +5,7 @@ Runs only on an isolated candidate checkout; no app deployment and no genuine
 user screenshot interpretation is claimed.
 """
 from __future__ import annotations
-import pathlib, tempfile, shutil, json, hashlib, sys, csv, io
+import pathlib, tempfile, shutil, json, hashlib, sys, csv, io, re
 from copy import deepcopy
 ROOT=pathlib.Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(ROOT/'release-kit-assets'))
@@ -53,7 +53,10 @@ with tempfile.TemporaryDirectory(prefix='release_gate_candidate_') as td:
     result=run(pkg,recordsfile,obsfile,out,explicit_release=True)
     assert result['status']=='PASS',result
     assert result['included']==1 and result['excluded']==0
-    csv_data=(out/CSV_NAME).read_bytes()
+    csv_filename=result['csvFilename']
+    assert re.fullmatch(r'pokesleep_import_\\d{8}_\\d{6}_\\d{3}(?:_\\d+)?\\.csv',csv_filename),csv_filename
+    assert not (out/CSV_NAME).exists()
+    csv_data=(out/csv_filename).read_bytes()
     rows=list(csv.reader(io.StringIO(csv_data.decode('utf-8'),newline=''),strict=True))
     assert len(rows)==2 and len(rows[0])==16
     assert rows[1][0]=='検証,用"CSV' and rows[1][1]=='フシギダネ'
@@ -61,12 +64,20 @@ with tempfile.TemporaryDirectory(prefix='release_gate_candidate_') as td:
     status=json.loads((out/STATUS_NAME).read_text())
     assert binding['csvSHA256']==status['csvSHA256']==sha(csv_data)
     assert binding['rows'][0]['imageId']=='IMG-0001'
-    print('PASS: release gate accepted synthetic record, row binding & digest',flush=True)
+    assert status['csvFilename']==csv_filename
+    print('PASS: release gate accepted timestamped CSV, row binding & digest',flush=True)
+    next_result=run(pkg,recordsfile,obsfile,out,explicit_release=True)
+    assert next_result['csvFilename']!=csv_filename, 'Second release overwrote the first CSV'
+    assert (out/csv_filename).read_bytes()==csv_data
+    assert (out/next_result['csvFilename']).read_bytes()==csv_data
+    print('PASS: two consecutive exports have distinct names, identical 16-column bytes',flush=True)
     # Re-run without explicit release flag must delete prior 3-file output.
     try:run(pkg,recordsfile,obsfile,out,explicit_release=False)
     except ValueError as e:assert 'HOLD' in str(e)
     else:raise AssertionError('release flag not enforced')
     assert not any((out/n).exists() for n in (CSV_NAME,BINDING_NAME,STATUS_NAME))
+    assert (out/csv_filename).read_bytes()==csv_data
+    assert (out/next_result['csvFilename']).read_bytes()==csv_data
     print('PASS: deny without release flag, previous artifacts erased',flush=True)
     # Tampering evidence must be rejected before any CSV can appear.
     evidence=pkg/'RELEASE_EVIDENCE.json'

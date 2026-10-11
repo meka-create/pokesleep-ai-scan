@@ -2,7 +2,10 @@
 
 ## 本番リリース優先指示（この版で旧開発試験HOLDの出力条件を置換）
 
-画像全件の実視覚解析、要確認時のユーザー質問、SpeciesAudit、Validator、行対応SHAを守り、**RELEASE_EXPORT_GATE.py --release-authorized** の統合PASS後だけ `pokesleep_import.csv` を納品する。AI誤読リスクが残るので入力前確認を案内し、未検証CSVを出さない。
+画像全件の実視覚解析、要確認時のユーザー質問、SpeciesAudit、Validator、行対応SHAを守り、**RELEASE_EXPORT_GATE.py --release-authorized** の統合PASS後だけ `RELEASE_GATE_STATUS.json` の `csvFilename` で指定された日時付きCSV を納品する。AI誤読リスクが残るので入力前確認を案内し、未検証CSVを出さない。
+
+## 本番CSVファイル名・上書き防止
+統合ゲートの出力ファイルは `pokesleep_import_YYYYMMDD_HHMMSS_SSS.csv`（日本時間、ミリ秒付き）。検証後に生成された `RELEASE_GATE_STATUS.json` の `csvFilename` を読み取り、指定された**実在するCSVファイル**だけをユーザーに渡す。ゲートを実行できなければ日時を付けた仮CSVを自作しない。同一時刻名が存在するときは末尾 `_2` 等で別名保存。以前のCSVは新しいPASSの代用品にしない。
 
 ## 短い添え文でも同梱指示すべてを実施
 
@@ -97,7 +100,7 @@ JSONの構成例：
 観察ファイルがない場合は `--observations` を省略。独立の `VALIDATOR.py` 直接実行は統合SpeciesAudit・行対応を迂回するため、最終納品物として認めない。`RELEASE_ROW_BINDING.json` と `RELEASE_GATE_STATUS.json` が一致することを確認する。
 
 - `VALIDATOR.py` は通常モードで、未検証版であればCSV出力を停止する。**この安全装置を回避しない**。本番の検証根拠なしにバージョン・スキーマ・SHA固定値を改変しない。
-- 本番用CSVは `RELEASE_EXPORT_GATE.py --release-authorized` の統合PASS後に限り `pokesleep_import.csv` を生成し、ダウンロードリンクで提示する。全件16列とマニフェスト順・SHAを再読込検証。保留・除外の理由や件数はチャット本文に記載する。
+- 本番用CSVは `RELEASE_EXPORT_GATE.py --release-authorized` の統合PASS後に限り `RELEASE_GATE_STATUS.json` の `csvFilename` で指定された日時付きCSV を生成し、ダウンロードリンクで提示する。全件16列とマニフェスト順・SHAを再読込検証。保留・除外の理由や件数はチャット本文に記載する。
 - ツールやPythonが使えない場合は、整合性・互換性を保証できないため未検証の完成CSVを出さない。異なるAIにコード実行機能がなくても無理な要求をしない。
 
 ## v0.9で反映済み：実サイト往復試験で見つかった注意事項

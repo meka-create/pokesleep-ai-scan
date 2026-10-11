@@ -11,9 +11,9 @@ const KIT_FILES = [
 // The KIT_VERSION.json raw SHA-256 is pinned in this versioned script.
 // KIT_VERSION.json pins the other 15 files; self-hashing inside JSON is impossible.
 // Any old/mixed/corrupt kit must fail closed BEFORE makeZip/saveZip.
-const SITE_HOTFIX_ID = 'v25-final-audit-four-fixes-20261011';
+const SITE_HOTFIX_ID = 'v26-timestamped-exports-20261011';
 const EXPECTED_KIT_VERSION = '0.12.1-release';
-const KIT_VERSION_RAW_SHA256 = '7c2653eb8cc8635fd50b65d2d03f87634ebc6878646f59b7a80b2481aa0ef1d8';
+const KIT_VERSION_RAW_SHA256 = 'ac182edf52068a5ac5d23cb6a76035b0cb6005193b59136d64b8f899651cb169';
 const FILES = new Map();
 let seq = 0, lastZip = null, lastName = '', busy = false, hashing = 0, hashError = false;
 const $ = s => document.querySelector(s);
@@ -22,6 +22,14 @@ const buildButton = $('#build'), status = $('#message'), ready = $('#ready');
 const allowed = /\.(png|jpg|jpeg|webp)$/i;
 const MAX_ARCHIVE_BYTES = 300 * 1024 * 1024; // technical browser-memory guard, NOT empirically verified AI capacity
 function fmt(bytes) { return (bytes / 1024 / 1024).toFixed(1) + ' MB'; }
+// Local browser clock, stamped when the ZIP bytes are actually ready.
+// Milliseconds avoid overwrites during rapid repeated builds.
+function timestampForFilename(date=new Date()) {
+  const pad=(n,width=2)=>String(n).padStart(width,'0');
+  return pad(date.getFullYear(),4)+pad(date.getMonth()+1)+pad(date.getDate())
+    +'_'+pad(date.getHours())+pad(date.getMinutes())+pad(date.getSeconds())
+    +'_'+pad(date.getMilliseconds(),3);
+}
 function announce(msg, error=false) { status.textContent=msg; status.classList.toggle('error',error); }
 function setBusy(b) { busy=b; buildButton.disabled = b || hashing > 0 || hashError || !FILES.size; fileInput.disabled=b; buildButton.innerHTML=b?'ZIPを作成しています…':'<span>AI提出用ZIPを作成</span><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M12 3v13m-5-5 5 5 5-5M4 19h16"/></svg>'; }
 function setZipProgress(p,label){const bar=$('#zip-progress'),fill=$('#zip-progress-fill');if(!bar||!fill)return;bar.hidden=false;fill.style.width=Math.round(Math.max(0,Math.min(100,p)))+'%';$('#zip-progress-label').textContent=label;}
@@ -228,7 +236,7 @@ async function build() {
     archiveEntries.push(...kitData,{name:'INPUT_MANIFEST.json',bytes:new TextEncoder().encode(JSON.stringify(doc,null,2)+'\n')});
     setZipProgress(90,'ZIPを作成中…');announce('ZIPを作成しています…');
     lastZip=makeZip(archiveEntries);
-    lastName='AI_Bukkomi_Scan_'+chosen.length+'images.zip';
+    lastName='AI_Bukkomi_Scan_'+chosen.length+'images_'+timestampForFilename()+'.zip';
     $('#archive-name').textContent=lastName;
     $('#archive-count').textContent=chosen.length+'枚 / '+fmt(lastZip.size);
     saveZip(lastZip,lastName);

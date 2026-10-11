@@ -16,6 +16,7 @@ import json
 import pathlib
 import re
 import sys
+from datetime import datetime, timedelta, timezone
 from PROTOTYPE_EXPORT_GATE import make_binding, sha, atomic_write
 from VALIDATOR import build, load_json, ValidationError
 from SPECIES_AUDIT import audit
@@ -24,6 +25,19 @@ CSV_NAME='pokesleep_import.csv'
 BINDING_NAME='RELEASE_ROW_BINDING.json'
 STATUS_NAME='RELEASE_GATE_STATUS.json'
 RELEASE_FILES=(CSV_NAME,BINDING_NAME,STATUS_NAME)
+JST=timezone(timedelta(hours=9))
+
+def timestamped_csv_name(output_dir, now=None):
+    """Return a unique CSV basename in Japan local time; never overwrite old CSVs."""
+    dt=now if now is not None else datetime.now(JST)
+    suffix=dt.strftime('%Y%m%d_%H%M%S_')+f'{dt.microsecond//1000:03d}'
+    stem=f'pokesleep_import_{suffix}'
+    number=1
+    while True:
+        filename=f'{stem}.csv' if number==1 else f'{stem}_{number}.csv'
+        if not (pathlib.Path(output_dir)/filename).exists():
+            return filename
+        number+=1
 
 def canonical(v):
     return json.dumps(v,ensure_ascii=False,sort_keys=True,separators=(',',':')).encode('utf-8')
@@ -91,16 +105,19 @@ def run(package_dir, records_path, observations_path, output_dir, evidence_file=
     if binding['csvSHA256']!=sha(data) or binding['includedCount']!=report['included']:
         raise ValueError('Row binding integrity failed; HOLD')
     binding_bytes=(json.dumps(binding,ensure_ascii=False,indent=2)+'\n').encode('utf-8')
+    csv_filename=timestamped_csv_name(target)
     status={'mode':'RELEASE_INTEGRATED_GATE_v0.1',
+            'csvFilename':csv_filename,
             'included':report['included'],'excluded':report['excluded'],
             'csvSHA256':sha(data),'bindingSHA256':sha(canonical(binding)),
             'releaseEvidenceSHA256':sha(canonical(evidence)),
             'sourceCommit':version['sourceCommit'],'status':'PASS'}
     try:
-        atomic_write(target/CSV_NAME,data)
+        atomic_write(target/csv_filename,data)
         atomic_write(target/BINDING_NAME,binding_bytes)
         atomic_write(target/STATUS_NAME,(json.dumps(status,ensure_ascii=False,indent=2)+'\n').encode('utf-8'))
     except BaseException:
+        (target/csv_filename).unlink(missing_ok=True)
         for name in RELEASE_FILES:(target/name).unlink(missing_ok=True)
         raise
     return status
