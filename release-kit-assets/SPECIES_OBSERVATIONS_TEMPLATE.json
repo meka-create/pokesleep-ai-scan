@@ -1,0 +1,24 @@
+{
+  "imageObservations": [
+    {
+      "carry": null,
+      "carryVisualConfirmed": null,
+      "formSizeVisualConfirmed": null,
+      "helpSeconds": null,
+      "imageId": "IMG-0001",
+      "quantities": [
+        null,
+        null,
+        null
+      ],
+      "shinyObserved": null,
+      "sleepTogetherHoursObserved": null,
+      "sp": null,
+      "speciesFamilyVisualConfirmed": null,
+      "speciesVisualConfirmed": null,
+      "whiteMintMarkObserved": null
+    }
+  ],
+  "purpose": "READ_ONLY_AUDIT_NOT_GOLD",
+  "sourceDescription": "通常の画像解析で既に読めた数値だけ。追加読取の強制なし"
+}

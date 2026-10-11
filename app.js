@@ -6,14 +6,14 @@ const KIT_FILES = [
   'MASTER_DATA.json', 'CSV_SCHEMA.json', 'KIT_VERSION.json',
   'VALIDATOR.py', 'PROTOTYPE_EXPORT_GATE.py', 'RELEASE_EXPORT_GATE.py', 'RECORDS_TEMPLATE.json',
   'SPECIES_AUDIT_GUIDE.md', 'SPECIES_AUDIT.py', 'species_evidence_lab.py',
-  'numeric_observer.py', 'SPECIES_OBSERVATIONS_TEMPLATE.json'
+  'numeric_observer.py', 'SPECIES_OBSERVATIONS_TEMPLATE.json', 'RELEASE_EVIDENCE.json'
 ];
 // The KIT_VERSION.json raw SHA-256 is pinned in this versioned script.
 // KIT_VERSION.json pins the other 15 files; self-hashing inside JSON is impossible.
 // Any old/mixed/corrupt kit must fail closed BEFORE makeZip/saveZip.
-const SITE_HOTFIX_ID = 'v23-promoted-release-mode-20261011-HOLD';
-const EXPECTED_KIT_VERSION = '0.12.0-prototype';
-const KIT_VERSION_RAW_SHA256 = 'fd6f0eeba95db1282df4fd9bf85d8bd3c203f926217b398f19ecdbaf8af2153b';
+const SITE_HOTFIX_ID = 'v24-release-candidate-separate-kit-20261011';
+const EXPECTED_KIT_VERSION = '0.12.1-release';
+const KIT_VERSION_RAW_SHA256 = '917f140bcd627892aa97d8ad05bcdd545c7629f5db7d76b4fcb5ae06a4d80979';
 const FILES = new Map();
 let seq = 0, lastZip = null, lastName = '', busy = false, hashing = 0, hashError = false;
 const $ = s => document.querySelector(s);
@@ -89,11 +89,11 @@ async function verifiedKitAssets() {
     'KIT_VERSION.json', 'VALIDATOR.py', 'PROTOTYPE_EXPORT_GATE.py',
     'RELEASE_EXPORT_GATE.py', 'RECORDS_TEMPLATE.json',
     'SPECIES_AUDIT_GUIDE.md', 'SPECIES_AUDIT.py', 'species_evidence_lab.py',
-    'numeric_observer.py', 'SPECIES_OBSERVATIONS_TEMPLATE.json'
+    'numeric_observer.py', 'SPECIES_OBSERVATIONS_TEMPLATE.json', 'RELEASE_EVIDENCE.json'
   ], 'ZIP同梱キット');
   const kitData=[];
   for (const name of KIT_FILES) {
-    const resp=await fetch(new URL('./kit-assets/'+name,import.meta.url),{
+    const resp=await fetch(new URL('./release-kit-assets/'+name,import.meta.url),{
       cache:'no-store', redirect:'error'
     });
     if(!resp.ok)throw new Error(`必要ファイルの取得に失敗: ${name} (${resp.status})`);
@@ -110,9 +110,9 @@ async function verifiedKitAssets() {
   catch { throw new Error('KIT_VERSION.json の解析に失敗しました'); }
   if(version.siteHotfixId!==SITE_HOTFIX_ID || version.kitVersion!==EXPECTED_KIT_VERSION ||
      version.rawAssetHashFormat!=='sha256-raw-file-bytes' ||
-     version.productionCsvAllowed!==false || version.compatibilityVerified!==false ||
-     version.masterVerifiedAgainstLive!==false ||
-     !String(version.status).includes('HOLD')) {
+     version.productionCsvAllowed!==true || version.compatibilityVerified!==true ||
+     version.masterVerifiedAgainstLive!==true ||
+     !String(version.status).includes('RELEASE')) {
     throw new Error('必要ファイルの整合性を確認できません。再読み込みしてください。');
   }
   const required=KIT_FILES.filter(name=>name!=='KIT_VERSION.json');

@@ -1,0 +1,15 @@
+{
+  "schemaVersion": "release-evidence-v0.1",
+  "kitVersion": "0.12.1-release",
+  "sourceCommit": "4001a25749e461db4957590dea39bd060bc22711",
+  "masterSha256": "13b7d07f31ca75dbc434e9426d37d2ef0ca2fd26f14105d28dcd2117c202a3db",
+  "schemaSha256": "c0f30f5400ef34823c211a95a8a13218f100e10d7a627e0d4536a66332cb5dfe",
+  "manualRoundTripEvidenceSHA256": "c5e9ef1087f6ff3de444a76fe5aa21b9656fea2d7345250d2e14fb386d9f6c96",
+  "goldenBlindEvidenceSHA256": "3c9060c943ad8a057d7573ae99f32521828752c36b26d79c145496f6399d619e",
+  "browserEvidenceSHA256": "2cad104d07e1f29da2c62060a46d41297919d3248c2ad0911abc881f7b846850",
+  "explicitUserApproval": true,
+  "approvalText": "本番出力を明示承認: 0.12.1-release",
+  "approvalType": "owner-delegated-release-decision",
+  "userDelegationText": "本番CSVのHOLDを解除タイミングはあなたに任せる。\nSTEP 2を完了して。",
+  "riskAcknowledgment": "AI画像読取の99.63% benchmarkは正式リリースの品質目標ではなく後日改善。確認とインポート前の見直しを維持。"
+}

@@ -1,0 +1,36 @@
+{
+  "asOf": "2026-10-11",
+  "assetSha256": {
+    "CSV_SCHEMA.json": "c0f30f5400ef34823c211a95a8a13218f100e10d7a627e0d4536a66332cb5dfe",
+    "MASTER_DATA.json": "13b7d07f31ca75dbc434e9426d37d2ef0ca2fd26f14105d28dcd2117c202a3db"
+  },
+  "compatibilityVerified": true,
+  "kitVersion": "0.12.1-release",
+  "licenseNote": "Do not claim affiliation with Pokémon Sleep or pokesleep-tool.",
+  "masterVerifiedAgainstLive": true,
+  "productionCsvAllowed": true,
+  "rawAssetHashFormat": "sha256-raw-file-bytes",
+  "rawAssetSha256": {
+    "AI_INSTRUCTIONS.md": "0e69138e53fb42df418e9a944c3c3068a05d023ec0f110c89ada9211c9ff1158",
+    "CSV_SCHEMA.json": "6511d300f6b103c52479546788431b2283022c87684877c7b961aa4e5222d288",
+    "MASTER_DATA.json": "d60410ba1f92d80c67ca3ff40bc8aa7a2cd51d4c03fc33f9e99fa83bb8e77a38",
+    "PROGRESS_PROTOCOL.md": "1125f47704d73c2a871581ebcd5681c0830351233d5237edcb215c333f767b86",
+    "PROTOTYPE_EXPORT_GATE.py": "bba13b59d419efdb7ab98b3775395437cd536c51bf5ec9ffd57416a8c9a7c856",
+    "READING_RULES.md": "5415ada619544ef88b00fe7b236f310a8de784bb47e903f0f373018ab4d87084",
+    "RECORDS_TEMPLATE.json": "b8fd79f7a6e44d0b3b67a8799a2829918b11fa98372e5bf44ea323dec1374e98",
+    "RELEASE_EXPORT_GATE.py": "146483874ea3ee71cdccac44091d000b0eee7242ff19ffffb481e6748f4b7377",
+    "SPECIES_AUDIT.py": "83b20ee0f55ffd1ef9208b2b2a4b01828ec9fabab6278cc595847a774ec7457f",
+    "SPECIES_AUDIT_GUIDE.md": "628b45f41b81c44a67153f0487a1fe360784381cc250029f8370bd590052a146",
+    "SPECIES_OBSERVATIONS_TEMPLATE.json": "ca459af459d719cfe7d136e054aaee81c25f8d1f81d90ebe553c7c682e65e3da",
+    "START_HERE.md": "3c11488785441f18fd3ae84b3635ad5e0944a5d88987b59e070e1322e63e8277",
+    "VALIDATOR.py": "173d8c7a9f252e9e12749547be4d666667abb7c5c2a41ec430fa7b7a9261a13d",
+    "numeric_observer.py": "c80310f496560843cb4a270c25c394245bb2aa92462f359d769b33a1fb7facdc",
+    "species_evidence_lab.py": "aa397228df5ef040aa7c2d8edfea5774eac79e6d56f8f91d5216e3e088541a76",
+    "RELEASE_EVIDENCE.json": "419df5b53b72f65bc15d16f10a89d58c7daf1c052595f7c4d29d1893bac804bf"
+  },
+  "siteHotfixId": "v24-release-candidate-separate-kit-20261011",
+  "sourceCommit": "4001a25749e461db4957590dea39bd060bc22711",
+  "status": "RELEASE CANDIDATE — 249 species importer roundtrip verified; AI errors possible",
+  "upstream": "https://github.com/nitoyon/pokesleep-tool",
+  "releaseEvidenceSHA256": "9ce6f7b1a8722c51603a4c10664abe228199a69cbb68db055b9b209275328b95"
+}
