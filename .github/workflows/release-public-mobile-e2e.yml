@@ -1,0 +1,35 @@
+name: AI Scan v24 published mobile real browser ZIP E2E (READ ONLY)
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'qa/release_mobile_published_smoke.py'
+      - '.github/workflows/release-public-mobile-e2e.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  mobile-published-release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Real chromium
+        run: |
+          python -m pip install playwright==1.56.0
+          python -m playwright install --with-deps chromium
+      - name: Actual released site mobile screenshot to ZIP
+        run: python qa/release_mobile_published_smoke.py
+      - name: Record observed public mobile evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: AI_Scan_v24_Actual_Public_Mobile_Evidence
+          path: release_mobile_evidence/
+          if-no-files-found: warn
+          retention-days: 30
