@@ -1,0 +1,65 @@
+name: STEP2 production candidate independent integration audit (NO DEPLOY)
+on:
+  push:
+    branches: [step2-release-candidate-isolated-20261011]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  isolated-candidate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 75
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Pin archived release evidence fingerprints, no site write
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json,hashlib,pathlib,re
+          k=pathlib.Path('release-kit-assets')
+          v=json.loads((k/'KIT_VERSION.json').read_bytes())
+          assert v['kitVersion']=='0.12.1-release'
+          assert all(v[f] is True for f in ('productionCsvAllowed','compatibilityVerified','masterVerifiedAgainstLive'))
+          assert len(v['rawAssetSha256'])==16
+          for name,h in v['rawAssetSha256'].items():
+            assert hashlib.sha256((k/name).read_bytes()).hexdigest()==h,name
+          e=json.loads((k/'RELEASE_EVIDENCE.json').read_bytes())
+          canonical=json.dumps(e,ensure_ascii=False,sort_keys=True,separators=(',',':')).encode()
+          assert hashlib.sha256(canonical).hexdigest()==v['releaseEvidenceSHA256']
+          m=json.loads((k/'MASTER_DATA.json').read_bytes())
+          assert len(m['pokemon'])==249
+          old=json.loads(pathlib.Path('kit-assets/KIT_VERSION.json').read_bytes())
+          assert old['productionCsvAllowed'] is False and old['compatibilityVerified'] is False
+          assert old['rawAssetSha256']['MASTER_DATA.json']==v['rawAssetSha256']['MASTER_DATA.json']
+          app=pathlib.Path('app.js').read_text()
+          assert hashlib.sha256((k/'KIT_VERSION.json').read_bytes()).hexdigest() in app
+          assert "release-kit-assets/" in app
+          print('PASS: all 16 raw assets, canonical evidence, exact frozen master, old monitored HOLD intact')
+          PY
+          python -m py_compile release-kit-assets/*.py
+          node --check app.js
+          node --check sw.js
+      - name: Real integrated RELEASE gate test plus rejection tests
+        run: python qa/release_candidate_gate_smoke.py
+      - name: Real Chromium prerequisites
+        run: |
+          python -m pip install playwright==1.56.0 Pillow==11.3.0
+          python -m playwright install --with-deps chromium
+      - name: Genuine browser ZIP creation 10 30 100 172 (production release candidate only)
+        run: python qa/release_browser_e2e.py
+      - name: Save evidence, never trigger release
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: STEP2_Isolated_Release_Candidate_Full_Gate_Evidence
+          path: qa/RELEASE_BROWSER_RESULTS.json
+          retention-days: 30
+          if-no-files-found: warn
