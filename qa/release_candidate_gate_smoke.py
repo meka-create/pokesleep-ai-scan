@@ -16,8 +16,14 @@ sha=lambda b:hashlib.sha256(b).hexdigest()
 with tempfile.TemporaryDirectory(prefix='release_gate_candidate_') as td:
     folder=pathlib.Path(td);pkg=folder/'package';shutil.copytree(K,pkg)
     (pkg/'images').mkdir()
-    source=ROOT/'assets/example-screenshot.png'
-    data=source.read_bytes()
+    # A byte-valid synthetic PNG avoids relying on optional test-site example metadata.
+    import struct,zlib
+    def png_chunk(kind,payload):
+        return (struct.pack('>I',len(payload))+kind+payload+
+                struct.pack('>I',zlib.crc32(kind+payload)&0xffffffff))
+    raw=b''.join(b'\x00'+b'\x7f\x7f\x7f'*64 for _ in range(64))
+    data=(b'\x89PNG\r\n\x1a\n'+png_chunk(b'IHDR',struct.pack('>IIBBBBB',64,64,8,2,0,0,0))+
+          png_chunk(b'IDAT',zlib.compress(raw))+png_chunk(b'IEND',b''))
     (pkg/'images/IMG-0001.png').write_bytes(data)
     v=json.loads((pkg/'KIT_VERSION.json').read_text(encoding='utf-8'))
     manifest={'schemaVersion':'ai-input-manifest-v0.1',
