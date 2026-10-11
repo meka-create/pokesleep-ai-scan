@@ -98,7 +98,11 @@ def box_action_menu_candidates(page):
           aria:el.getAttribute('aria-label'), haspopup:el.getAttribute('aria-haspopup'),
           testids:Array.from(el.querySelectorAll('[data-testid]')).map(e=>e.getAttribute('data-testid')).slice(0,4)};
       }).filter(e => e.width>0 && e.height>0 && e.x>vw*.75 &&
-          e.y>tab.top-65 && e.y<tab.bottom+55);
+          e.y>tab.top-65 && e.y<tab.bottom+55 &&
+          // Many imported item cards sit next to the Box actions icon.
+          // Only a menu-looking control may be clicked, never a data item.
+          (e.aria === 'actions' || e.haspopup === 'menu' ||
+           ['actions','more_vert','⋮','︙'].includes(e.text)));
       return {reason: candidates.length===1 ? 'SINGLE_NEAR_BOX' : 'AMBIGUOUS_NEAR_BOX',
         boxTab:{x:tab.x,y:tab.y,width:tab.width,height:tab.height}, candidates};
     }''')
