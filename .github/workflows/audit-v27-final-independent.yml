@@ -1,0 +1,55 @@
+name: AI Scan v27 full isolated final audit incl no-overwrite and 172 ZIP (READ ONLY)
+on:
+  push:
+    branches: [audit-v27-safe-repeat-save-20261011]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  predeployment-audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 75
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/checkout@v4
+        with:
+          ref: 7fc1ba49126a8e2e552ce7c9f58f062e388da456
+          path: trusted_tools
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Independent dual-kit pins and no regression
+        run: |
+          set -euo pipefail
+          python qa/onepass_contract.py
+          python -m py_compile kit-assets/*.py release-kit-assets/*.py qa/*.py
+          node --check app.js
+          node --check zip-store.js
+          node --check sw.js
+          python -m unittest discover -s qa -p 'test_*.py' -v
+          python -m unittest discover -s trusted_tools/tests -p 'test_auto_watch.py' -v
+          python -m unittest discover -s trusted_tools/tests -p 'test_upstream_sync.py' -v
+          python -m unittest discover -s trusted_tools/tests -p 'test_import_compat_gate.py' -v
+          python -m unittest discover -s trusted_tools/tests -p 'test_verified_auto_promotion.py' -v
+      - name: Release gate positive and negative output checks
+        run: python qa/release_candidate_gate_smoke.py
+      - name: Chromium setup
+        run: |
+          python -m pip install playwright==1.56.0 Pillow==11.3.0
+          python -m playwright install --with-deps chromium
+      - name: Real browser package full size regression
+        run: python qa/release_browser_e2e.py
+      - name: Store audit proof without publishing production
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: AI_Scan_v27_Independent_Final_Regression_Evidence
+          path: qa/RELEASE_BROWSER_RESULTS.json
+          retention-days: 30
+          if-no-files-found: warn
