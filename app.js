@@ -11,9 +11,9 @@ const KIT_FILES = [
 // The KIT_VERSION.json raw SHA-256 is pinned in this versioned script.
 // KIT_VERSION.json pins the other 15 files; self-hashing inside JSON is impossible.
 // Any old/mixed/corrupt kit must fail closed BEFORE makeZip/saveZip.
-const SITE_HOTFIX_ID = 'v18-blind-reading-onepass-20261011-HOLD';
+const SITE_HOTFIX_ID = 'v19-faded-subskill-onepass-20261011-HOLD';
 const EXPECTED_KIT_VERSION = '0.12.0-prototype';
-const KIT_VERSION_RAW_SHA256 = '3004b5c451d39833bfc4f3b55f8bd1fda7b6d6d7eff7fc40042bf78583fa9616';
+const KIT_VERSION_RAW_SHA256 = 'f0b5a1a1cf40992f1be9bf959fa4c08bfda8bf1f79248be0f1c3d5f0a4e50e82';
 const FILES = new Map();
 let seq = 0, lastZip = null, lastName = '', busy = false, hashing = 0, hashError = false;
 const $ = s => document.querySelector(s);
