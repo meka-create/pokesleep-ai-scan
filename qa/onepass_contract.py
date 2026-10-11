@@ -19,7 +19,7 @@ s=(R/'app.js').read_text()
 assert f"KIT_VERSION_RAW_SHA256 = '{H(K/'KIT_VERSION.json')}'" in s
 assert f"SITE_HOTFIX_ID = '{v['siteHotfixId']}'" in s
 assert v['siteHotfixId'] in (R/'sw.js').read_text()
-assert './app.js?v=v22-release-form-evidence-20261011' in (R/'index.html').read_text()
+assert './app.js?v=v23-promoted-release-mode-20261011' in (R/'index.html').read_text()
 assert 'update-watch-close-bottom' not in (R/'index.html').read_text()
 for f in ('AI_INSTRUCTIONS.md','READING_RULES.md','SPECIES_AUDIT_GUIDE.md'):
  s=(K/f).read_text()
@@ -37,6 +37,8 @@ assert '候補間の外見差を照合してから種族名を確定する' in (
 assert '枠色・隣枠の内容だけでランクや効果を決めない' in (K/'READING_RULES.md').read_text()
 assert 'なお複数候補が残れば推測で確定せずユーザーに確認する' in (K/'READING_RULES.md').read_text()
 assert '右端の食材3は' in (K/'READING_RULES.md').read_text()
+assert 'allow_release=allow_release' in (K/'SPECIES_AUDIT.py').read_text()
+assert 'def verify_additive_legacy_master(master, master_bytes, version=None, *, allow_release=False)' in (K/'numeric_observer.py').read_text()
 assert '全画像の一律な二度読み' in (K/'START_HERE.md').read_text()
 assert "--user-confirmations" in (K/'RELEASE_EXPORT_GATE.py').read_text()
 assert "user_confirmations_path=args.user_confirmations" in (K/'RELEASE_EXPORT_GATE.py').read_text()

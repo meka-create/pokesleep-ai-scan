@@ -43,7 +43,7 @@ def _canonical_sha(v):
                                      separators=(',', ':')).encode('utf-8')).hexdigest()
 
 
-def verify_additive_legacy_master(master, master_bytes, version=None):
+def verify_additive_legacy_master(master, master_bytes, version=None, *, allow_release=False):
     """Independently anchor old gameplay data; reject mutations and ambiguity.
 
     New entries can be appended only after a real pinned-source/real-public
@@ -59,12 +59,22 @@ def verify_additive_legacy_master(master, master_bytes, version=None):
         raise ValueError('Promoted master not independently pinned by publisher; HOLD')
     if not isinstance(version, dict):
         raise ValueError('Unapproved promoted master (version missing); HOLD')
-    if (version.get('kitVersion') != '0.12.0-prototype' or
-        version.get('productionCsvAllowed') is not False or
-        version.get('compatibilityVerified') is not False or
-        version.get('masterVerifiedAgainstLive') is not False or
-        'HOLD' not in version.get('status','')):
-        raise ValueError('Unapproved promoted master HOLD policy; HOLD')
+    if allow_release:
+        # Only the separate release gate may invoke this branch. Retain the
+        # exact independently pinned promoted-master SHA and legacy anchors.
+        if (version.get('kitVersion') == '0.12.0-prototype' or
+            version.get('productionCsvAllowed') is not True or
+            version.get('compatibilityVerified') is not True or
+            version.get('masterVerifiedAgainstLive') is not True):
+            raise ValueError('Promoted master release eligibility incomplete; HOLD')
+    else:
+        # Scheduled auto-promotion and the development kit NEVER lift HOLD.
+        if (version.get('kitVersion') != '0.12.0-prototype' or
+            version.get('productionCsvAllowed') is not False or
+            version.get('compatibilityVerified') is not False or
+            version.get('masterVerifiedAgainstLive') is not False or
+            'HOLD' not in version.get('status','')):
+            raise ValueError('Unapproved promoted master HOLD policy; HOLD')
     if set(master) != {'cutoff','pokemon','ingredients','natures','subskills','provenance'}:
         raise ValueError('Unexpected master schema; HOLD')
     species = master['pokemon']

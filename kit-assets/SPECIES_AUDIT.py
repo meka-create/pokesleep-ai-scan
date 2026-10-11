@@ -245,7 +245,7 @@ def verify_bundle(pkg, *, allow_release=False):
             raise ValueError('Auditor code/manifest digest mismatch: '+code_file)
     master_raw=(pkg/'MASTER_DATA.json').read_bytes()
     master=json.loads(master_raw.decode('utf-8'))
-    verify_additive_legacy_master(master,master_raw,version)
+    verify_additive_legacy_master(master,master_raw,version,allow_release=allow_release)
     return master,version
 
 

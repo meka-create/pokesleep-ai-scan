@@ -1,0 +1,60 @@
+name: AI Scan promoted master release mode independent audit (READ ONLY)
+on:
+  push:
+    branches: [midterm-promoted-release-mode-fix-20261011]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  independent-midterm:
+    runs-on: ubuntu-latest
+    timeout-minutes: 75
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/checkout@v4
+        with:
+          ref: 7fc1ba49126a8e2e552ce7c9f58f062e388da456
+          path: trusted_tools
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Real Chromium setup
+        run: |
+          python -m pip install playwright==1.56.0 Pillow==11.3.0 pyyaml==6.0.3
+          python -m playwright install --with-deps chromium
+      - name: Static pins syntax and dormant release form regressions
+        run: |
+          set -euo pipefail
+          python qa/onepass_contract.py
+          python -m unittest discover -s qa -p 'test_*.py' -v
+          python -m py_compile kit-assets/*.py
+          node --check app.js
+          node --check zip-store.js
+          node --check sw.js
+          node --check ui-extras.js
+          node --check update-status.js
+      - name: Independent trusted change detection and promotion test suites
+        run: |
+          set -euo pipefail
+          python -m unittest discover -s trusted_tools/tests -p 'test_auto_watch.py' -v
+          python -m unittest discover -s trusted_tools/tests -p 'test_upstream_sync.py' -v
+          python -m unittest discover -s trusted_tools/tests -p 'test_import_compat_gate.py' -v
+          python -m unittest discover -s trusted_tools/tests -p 'test_verified_auto_promotion.py' -v
+      - name: Real HTTP Chromium 10 30 100 172 screenshot ZIP checks
+        run: python qa/prompt_browser_e2e.py
+      - name: Save browser proof and abort release
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: Midterm_v23_Browser_Regression_HOLD
+          path: qa/BROWSER_ZIP_RESULTS.json
+          retention-days: 30
+          if-no-files-found: warn
