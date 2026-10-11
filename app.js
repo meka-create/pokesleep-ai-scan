@@ -11,9 +11,9 @@ const KIT_FILES = [
 // The KIT_VERSION.json raw SHA-256 is pinned in this versioned script.
 // KIT_VERSION.json pins the other 15 files; self-hashing inside JSON is impossible.
 // Any old/mixed/corrupt kit must fail closed BEFORE makeZip/saveZip.
-const SITE_HOTFIX_ID = 'v08c-auditfix-20261010-r2-ai-bukkomi-scan-step1-midfix1';
+const SITE_HOTFIX_ID = 'v18-plus-promotion-policy-candidate-HOLD';
 const EXPECTED_KIT_VERSION = '0.12.0-prototype';
-const KIT_VERSION_RAW_SHA256 = 'cc515bfe68d9461d0b8fe2a08733267252107ea375411dde8af793233d88e64a';
+const KIT_VERSION_RAW_SHA256 = '61a267f332e86130fd0b5441cf653aae532d1a7efffee4a0f33aba2df555ecd6';
 const FILES = new Map();
 let seq = 0, lastZip = null, lastName = '', busy = false, hashing = 0, hashError = false;
 const $ = s => document.querySelector(s);
