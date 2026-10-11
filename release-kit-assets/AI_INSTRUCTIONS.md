@@ -2,7 +2,7 @@
 
 ## 本番リリース優先指示（この版で旧開発試験HOLDの出力条件を置換）
 
-本番キットとして、画像全件の実視覚解析、要確認時のユーザー質問、SpeciesAudit、Validator、行対応SHAを守り、**RELEASE_EXPORT_GATE.py --release-authorized** の統合PASS後だけ `pokesleep_import.csv` を納品する。以下に残る過去の `PROTOTYPE_EXPORT_GATE.py`・`DEVELOPMENT_ONLY`・本番HOLDの記述は旧試験履歴であり本番キットでの出力手順ではない。AI誤読リスクが残るので入力前確認を案内し、未検証CSVを出さない。
+画像全件の実視覚解析、要確認時のユーザー質問、SpeciesAudit、Validator、行対応SHAを守り、**RELEASE_EXPORT_GATE.py --release-authorized** の統合PASS後だけ `pokesleep_import.csv` を納品する。AI誤読リスクが残るので入力前確認を案内し、未検証CSVを出さない。
 
 ## 短い添え文でも同梱指示すべてを実施
 
@@ -36,7 +36,7 @@
 - 画像を全件列挙して、`INPUT_MANIFEST.json` の `images` と数・ID・ファイル名を照合する。未読のまま読んだことにしない。
 - 全画像を**実際に視覚的に観察**して各項目を抽出する。ファイル名やマスターだけから読み取ったふりをしない。
 - 画像の読取ができない実行環境なら明示して停止。勝手な値でCSVを作らない。
-- `KIT_VERSION.json` で `productionCsvAllowed=false` の場合、本番CSVを作らず、試作・検証キットであることを説明する。開発者が明示的に試験を依頼し、`INPUT_MANIFEST.json` の全画像の処遇が確定した場合に限り、統合 `PROTOTYPE_EXPORT_GATE.py --prototype-test` を通して `DEVELOPMENT_ONLY_pokesleep_16col.csv` と `DEVELOPMENT_ONLY_ROW_BINDING.json` および検証状態JSONを実在ファイルで納品する。これは本番互換性の承認ではなく、一般利用者への本番CSV納品には流用しない。
+- `KIT_VERSION.json` の本番許可フラグ、同梱 `RELEASE_EVIDENCE.json`、実ファイルハッシュを確認してから本番統合ゲートを実行する。許可フラグが揃わなければHOLD。開発用ゲートでのPASSは本番出力の証拠ではない。
 
 進捗表示は標準ONで `PROGRESS_PROTOCOL.md` の**自然な区切りで約1分・解析継続優先**方式に従う。進捗表示だけのために解析を分割・停止しない。対象枚数は `INPUT_MANIFEST.json` の `images` 配列（`inputImageCount` と一致必須）で決める。可能な範囲で実画像の解析を続け、環境の処理・応答制限に達した場合は実在する記録と未完了範囲を明示する。中間送信の成否や1回の応答での完走は保証しない。
 
@@ -56,7 +56,7 @@ JSONの構成例：
 ```json
 {
   "schemaVersion":"ai-reading-v0.1",
-  "kitVersion":"0.12.0-prototype",
+  "kitVersion":"0.12.1-release",
   "decisions":[
     {"imageId":"IMG-0001","decision":"include","reviewComplete":true,"unresolved":[],
      "data":{"nickname":"サンプル","species":"カメックス","level":60,"skillLevel":3,
@@ -92,18 +92,18 @@ JSONの構成例：
 
 確定後、AI内部の作業ディレクトリにJSONを置いて以下の**監査統合ゲート**を実行する：
 
-`python3 PROTOTYPE_EXPORT_GATE.py --records /tmp/working_records.json --package-dir . --observations /tmp/species_observations.json --output-dir ./dev-output --prototype-test`
+`python3 RELEASE_EXPORT_GATE.py --records /tmp/working_records.json --package-dir . --observations /tmp/species_observations.json --output-dir ./release-output --release-authorized`
 
-観察ファイルがない場合は `--observations` を省略。独立の `VALIDATOR.py --prototype-test` による直接CSV作成を、開発用の検証済み成果物として提出しない。統合ゲートで種族監査の矛盾や要確認があれば止める。`DEVELOPMENT_ONLY_ROW_BINDING.json` もCSVとともに納品し、Goldenの行順照合で使用する。
+観察ファイルがない場合は `--observations` を省略。独立の `VALIDATOR.py` 直接実行は統合SpeciesAudit・行対応を迂回するため、最終納品物として認めない。`RELEASE_ROW_BINDING.json` と `RELEASE_GATE_STATUS.json` が一致することを確認する。
 
 - `VALIDATOR.py` は通常モードで、未検証版であればCSV出力を停止する。**この安全装置を回避しない**。本番の検証根拠なしにバージョン・スキーマ・SHA固定値を改変しない。
-- 本番用CSVは引き続き出力不可。このユーザーが許可した開発試験では、`PROTOTYPE_EXPORT_GATE.py --prototype-test`の統合PASS後に `DEVELOPMENT_ONLY_pokesleep_16col.csv` と明記した**実在するCSVファイル**を生成し、ダウンロードリンクを提示する。全件16列とマニフェスト順を再読込検証。保留・除外の理由や件数はチャット本文に記載。
+- 本番用CSVは `RELEASE_EXPORT_GATE.py --release-authorized` の統合PASS後に限り `pokesleep_import.csv` を生成し、ダウンロードリンクで提示する。全件16列とマニフェスト順・SHAを再読込検証。保留・除外の理由や件数はチャット本文に記載する。
 - ツールやPythonが使えない場合は、整合性・互換性を保証できないため未検証の完成CSVを出さない。異なるAIにコード実行機能がなくても無理な要求をしない。
 
 ## v0.9で反映済み：実サイト往復試験で見つかった注意事項
 - ニックネーム内にCR/LFの改行があると実インポータの再出力で文字列破損を確認。CSVへの引用だけでは安全にならないため、自動で除去・置換しない。ユーザーに改行なしのニックネームを確認し、回答まではHOLD。カンマ・引用符は試験で値保持を確認済み。
 - ミュウの食材2を空欄にした過去の試験データはゲーム仕様上不正だった。pokesleep-toolが補完した値を互換性FAILの根拠としない。
-- 本番CSV許可は引き続きfalse。実画像の読取精度と実サイトのCSV互換を別々に判定する。
+- 本番キットのCSV出力権限と実画像の正確な読取は別条件。誤読が残るため、ユーザーへ出力値の確認を案内する。
 
 ## v0.10追加：質問を省く2項目
 - `一緒に眠った時間`、`色違い` は問い合わせを発生させず、不明な場合にそれぞれ `0` を記録する。これはユーザーが選んだCSV運用上の代用値で、ゲーム上の実値の証明ではない。

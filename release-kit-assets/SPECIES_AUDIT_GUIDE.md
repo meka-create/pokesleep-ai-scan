@@ -43,7 +43,7 @@ python3 SPECIES_AUDIT.py --package-dir . --records WORKING_RECORDS.json --observ
 
 ## v0.8の統合安全装置
 
-種族監査はこれまでどおり単独の読み取り専用処理です。ただし開発用CSVの納品は必ず `PROTOTYPE_EXPORT_GATE.py --prototype-test --records WORKING_RECORDS.json --package-dir . --output-dir ./dev-output` を経由します。必要に応じて `--observations SPECIES_OBSERVATIONS.json` を追加します。矛盾・種族の未解決確認があればHOLDします。出力にはCSVの行と画像IDを結び付ける `DEVELOPMENT_ONLY_ROW_BINDING.json` を添付します。`VALIDATOR.py` とマスター/16列スキーマを変更せず、数値からの種族自動確定もしません。
+種族監査は単独では読み取り専用であり、CSVを生成しません。本番CSVは `RELEASE_EXPORT_GATE.py --release-authorized --records WORKING_RECORDS.json --package-dir . --output-dir ./release-output` を経由し、必要に応じて `--observations SPECIES_OBSERVATIONS.json` を追加します。矛盾・種族の未解決確認があればHOLDします。出力と画像IDを結び付ける `RELEASE_ROW_BINDING.json` を照合します。`VALIDATOR.py` とマスター/16列スキーマを変更せず、数値からの種族自動確定もしません。
 
 ## 種族とスキルの独立観察（全件共通）
 
@@ -130,4 +130,4 @@ python3 SPECIES_AUDIT.py --package-dir . --records WORKING_RECORDS.json --observ
 ## 独立監査の終了コードと確認回答の対応（中間監査修正）
 - 単独実行の `SPECIES_AUDIT.py` は、種族矛盾に加えて**画像から未確定の種族・サイズ確認が残る場合も終了コード3（HOLD）**を返す。監査JSONは出力されるが、完了または出力許可を意味しない。
 - ユーザーのサイズ回答は `include` の画像に限って受け付ける。除外画像に確認履歴を付けて件数だけ増やしたり、不正なdecisionを除外と扱ったりしない。
-- 統合ゲートの本番HOLDや、画像を実際に見て確定する責任は変更しない。
+- 個々の画像についての未解決確認は引き続きHOLD。AIが画像を実際に読んで確定する責任は変更しない。
