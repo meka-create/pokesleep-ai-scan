@@ -13,9 +13,11 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import os
 import pathlib
 import re
 import sys
+import tempfile
 from datetime import datetime, timedelta, timezone
 from PROTOTYPE_EXPORT_GATE import make_binding, sha, atomic_write
 from VALIDATOR import build, load_json, ValidationError
@@ -38,6 +40,38 @@ def timestamped_csv_name(output_dir, now=None):
         if not (pathlib.Path(output_dir)/filename).exists():
             return filename
         number+=1
+
+def write_unique_csv(output_dir, data, now=None):
+    """Publish a fully written CSV under a never-reused filename.
+
+    The final directory entry is installed using a same-filesystem hard link,
+    which is atomic and *exclusive*: concurrent writers cannot replace any
+    previous verified CSV, even when both choose the same minute and suffix.
+    If exclusive hard links are unavailable, refuse rather than overwrite.
+    The caller writes the gate status marker only after this succeeds.
+    """
+    output_dir=pathlib.Path(output_dir)
+    temporary=None
+    try:
+        with tempfile.NamedTemporaryFile(
+                mode='wb',dir=output_dir,prefix='.pokesleep_csv_',
+                suffix='.tmp',delete=False) as fh:
+            temporary=pathlib.Path(fh.name)
+            fh.write(data)
+            fh.flush()
+            os.fsync(fh.fileno())
+        for _ in range(10000):
+            filename=timestamped_csv_name(output_dir,now=now)
+            try:
+                os.link(temporary,output_dir/filename)
+            except FileExistsError:
+                # Another process won the name. Try the next numbered suffix.
+                continue
+            return filename
+        raise OSError('Too many simultaneous CSV names; HOLD')
+    finally:
+        if temporary is not None:
+            temporary.unlink(missing_ok=True)
 
 def canonical(v):
     return json.dumps(v,ensure_ascii=False,sort_keys=True,separators=(',',':')).encode('utf-8')
@@ -105,19 +139,22 @@ def run(package_dir, records_path, observations_path, output_dir, evidence_file=
     if binding['csvSHA256']!=sha(data) or binding['includedCount']!=report['included']:
         raise ValueError('Row binding integrity failed; HOLD')
     binding_bytes=(json.dumps(binding,ensure_ascii=False,indent=2)+'\n').encode('utf-8')
-    csv_filename=timestamped_csv_name(target)
-    status={'mode':'RELEASE_INTEGRATED_GATE_v0.1',
-            'csvFilename':csv_filename,
-            'included':report['included'],'excluded':report['excluded'],
-            'csvSHA256':sha(data),'bindingSHA256':sha(canonical(binding)),
-            'releaseEvidenceSHA256':sha(canonical(evidence)),
-            'sourceCommit':version['sourceCommit'],'status':'PASS'}
+    csv_filename=None
     try:
-        atomic_write(target/csv_filename,data)
+        csv_filename=write_unique_csv(target,data)
+        status={'mode':'RELEASE_INTEGRATED_GATE_v0.1',
+                'csvFilename':csv_filename,
+                'included':report['included'],'excluded':report['excluded'],
+                'csvSHA256':sha(data),'bindingSHA256':sha(canonical(binding)),
+                'releaseEvidenceSHA256':sha(canonical(evidence)),
+                'sourceCommit':version['sourceCommit'],'status':'PASS'}
         atomic_write(target/BINDING_NAME,binding_bytes)
         atomic_write(target/STATUS_NAME,(json.dumps(status,ensure_ascii=False,indent=2)+'\n').encode('utf-8'))
     except BaseException:
-        (target/csv_filename).unlink(missing_ok=True)
+        # Only remove the CSV newly allocated by this attempt. Older CSV
+        # outputs must not be deleted merely because a fresh attempt failed.
+        if csv_filename is not None:
+            (target/csv_filename).unlink(missing_ok=True)
         for name in RELEASE_FILES:(target/name).unlink(missing_ok=True)
         raise
     return status

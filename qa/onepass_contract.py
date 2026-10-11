@@ -26,13 +26,14 @@ for name,expected in d['rawAssetSha256'].items(): assert H(D/name)==expected,('r
 assert f"KIT_VERSION_RAW_SHA256 = '{H(D/'KIT_VERSION.json')}'" in s
 assert f"SITE_HOTFIX_ID = '{d['siteHotfixId']}'" in s
 assert d['siteHotfixId'] in (R/'sw.js').read_text()
-assert './app.js?v=v26-timestamped-exports-20261011' in (R/'index.html').read_text()
+assert './app.js?v=v27-audited-unique-downloads-20261011' in (R/'index.html').read_text()
 assert "new URL('./release-kit-assets/'+name" in s
 assert "version.productionCsvAllowed!==true" in s
 assert "RELEASE_EVIDENCE.json" in s
 assert "timestampForFilename" in s
 assert "csvFilename" in (D/'RELEASE_EXPORT_GATE.py').read_text()
 assert "timestamped_csv_name" in (D/'RELEASE_EXPORT_GATE.py').read_text()
+assert "write_unique_csv" in (D/'RELEASE_EXPORT_GATE.py').read_text()
 assert 'update-watch-close-bottom' not in (R/'index.html').read_text()
 for f in ('AI_INSTRUCTIONS.md','READING_RULES.md','SPECIES_AUDIT_GUIDE.md'):
  s=(K/f).read_text()

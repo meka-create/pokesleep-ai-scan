@@ -29,6 +29,7 @@ with TemporaryDirectory() as folder:
         app=(ROOT/'app.js').read_text(encoding='utf-8')
         self.assertIn('function nextZipFilename(imageCount)',app)
         self.assertIn('zipNameCounts.set(stem,number)',app)
+        self.assertIn('lastName=nextZipFilename(lastImageCount)',app)
         self.assertIn('pad(date.getHours())+pad(date.getMinutes())',app)
         self.assertNotIn('getSeconds()',app)
         self.assertNotIn('getMilliseconds()',app)

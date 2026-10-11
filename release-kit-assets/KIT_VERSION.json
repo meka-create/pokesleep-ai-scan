@@ -18,7 +18,7 @@
     "PROTOTYPE_EXPORT_GATE.py": "bba13b59d419efdb7ab98b3775395437cd536c51bf5ec9ffd57416a8c9a7c856",
     "READING_RULES.md": "01503b9aaf01c51bc42a61d31124513037d2e9d3c7e9a359832a91b9567c18d2",
     "RECORDS_TEMPLATE.json": "b8fd79f7a6e44d0b3b67a8799a2829918b11fa98372e5bf44ea323dec1374e98",
-    "RELEASE_EXPORT_GATE.py": "64a79f25384d020d7de97da7f43149dd796957e3ca0e0dabb4c8618085b91c95",
+    "RELEASE_EXPORT_GATE.py": "67ab21c5a09749405a5cdb9d25131e234b6425cd4d8a4ead97a216720ab3e94d",
     "SPECIES_AUDIT.py": "6b303bb35628bfc91a1be210edea8d11b0e9f26cfceb2df5d094e7004c89f5ab",
     "SPECIES_AUDIT_GUIDE.md": "cf890aab75d7a8d0b2e2580201bf8246a7c9d8d3f60db57b1d3837acdef26ba9",
     "SPECIES_OBSERVATIONS_TEMPLATE.json": "ca459af459d719cfe7d136e054aaee81c25f8d1f81d90ebe553c7c682e65e3da",
@@ -28,9 +28,9 @@
     "species_evidence_lab.py": "aa397228df5ef040aa7c2d8edfea5774eac79e6d56f8f91d5216e3e088541a76",
     "RELEASE_EVIDENCE.json": "419df5b53b72f65bc15d16f10a89d58c7daf1c052595f7c4d29d1893bac804bf"
   },
-  "siteHotfixId": "v26-timestamped-exports-20261011",
+  "siteHotfixId": "v27-audited-unique-downloads-20261011",
   "sourceCommit": "4001a25749e461db4957590dea39bd060bc22711",
-  "status": "RELEASE VERIFIED — timestamped CSV and ZIP, isolated release gate, pinned 249 species",
+  "status": "RELEASE VERIFIED — timestamped minute-only ZIP/CSV with collision-safe export, pinned 249 species",
   "upstream": "https://github.com/nitoyon/pokesleep-tool",
   "releaseEvidenceSHA256": "9ce6f7b1a8722c51603a4c10664abe228199a69cbb68db055b9b209275328b95"
 }

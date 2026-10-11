@@ -77,6 +77,16 @@ def main():
       with zipfile.ZipFile(target2) as z2:
        assert z2.testzip() is None
        assert len(z2.namelist())==28
+     if n==10:
+      # Saving the exact same ZIP must also allocate a fresh name.
+      with page.expect_download(timeout=30000) as repeated_save:
+       page.locator('#redownload').click()
+      saved_again=repeated_save.value
+      assert saved_again.suggested_filename not in (dl.suggested_filename,dl2.suggested_filename)
+      assert re.fullmatch(r'AI_Bukkomi_Scan_10images_[0-9]{8}_[0-9]{4}(?:_[0-9]+)?[.]zip',saved_again.suggested_filename)
+      target3=here/'10_redownload.zip'
+      saved_again.save_as(str(target3))
+      assert target3.read_bytes()==target2.read_bytes()
      assert not errors,errors
      result={'n':n,'zipBytes':target.stat().st_size,'elapsedSeconds':round(time.monotonic()-start,2),'entries':n+18,'downloadFilename':dl.suggested_filename,'originalImageSha256Match':True,'kitShaMatch':True,'jsErrors':0}
      report['sizes'].append(result);print('PASS',result,flush=True);context.close()

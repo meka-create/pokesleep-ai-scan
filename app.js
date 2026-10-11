@@ -11,11 +11,11 @@ const KIT_FILES = [
 // The KIT_VERSION.json raw SHA-256 is pinned in this versioned script.
 // KIT_VERSION.json pins the other 15 files; self-hashing inside JSON is impossible.
 // Any old/mixed/corrupt kit must fail closed BEFORE makeZip/saveZip.
-const SITE_HOTFIX_ID = 'v26-timestamped-exports-20261011';
+const SITE_HOTFIX_ID = 'v27-audited-unique-downloads-20261011';
 const EXPECTED_KIT_VERSION = '0.12.1-release';
-const KIT_VERSION_RAW_SHA256 = '3b0a40111b923c28682c3775e1d9c8aa699ea1b802dcc47227d7bebe2fc100ad';
+const KIT_VERSION_RAW_SHA256 = 'fd2563c61928257863c8f8615eeed2f961dff2b8a3a2ad8bf7cf92fff2ec78b4';
 const FILES = new Map();
-let seq = 0, lastZip = null, lastName = '', busy = false, hashing = 0, hashError = false;
+let seq = 0, lastZip = null, lastName = '', lastImageCount = 0, busy = false, hashing = 0, hashError = false;
 const $ = s => document.querySelector(s);
 const fileInput = $('#choose-files'), selection = $('#selection'), list = $('#files');
 const buildButton = $('#build'), status = $('#message'), ready = $('#ready');
@@ -242,7 +242,8 @@ async function build() {
     archiveEntries.push(...kitData,{name:'INPUT_MANIFEST.json',bytes:new TextEncoder().encode(JSON.stringify(doc,null,2)+'\n')});
     setZipProgress(90,'ZIPを作成中…');announce('ZIPを作成しています…');
     lastZip=makeZip(archiveEntries);
-    lastName=nextZipFilename(chosen.length);
+    lastImageCount=chosen.length;
+    lastName=nextZipFilename(lastImageCount);
     $('#archive-name').textContent=lastName;
     $('#archive-count').textContent=chosen.length+'枚 / '+fmt(lastZip.size);
     saveZip(lastZip,lastName);
@@ -252,7 +253,14 @@ async function build() {
   finally {setBusy(false);}
 }
 buildButton.addEventListener('click',build);
-$('#redownload').addEventListener('click',()=>{if(lastZip)saveZip(lastZip,lastName);});
+$('#redownload').addEventListener('click',()=>{
+  if(!lastZip)return;
+  // The same verified ZIP bytes may be saved again, but never with the same
+  // within-session name. Do not regenerate or change any image/manifest bytes.
+  lastName=nextZipFilename(lastImageCount);
+  $('#archive-name').textContent=lastName;
+  saveZip(lastZip,lastName);
+});
 $('#copy-prompt').addEventListener('click',async()=>{
   try {await navigator.clipboard.writeText($('#prompt-text').textContent);$('#copy-feedback').textContent='コピーしました';$('#copy-feedback').classList.add('shown');$('#copy-prompt').classList.add('copied');$('#copy-prompt').setAttribute('aria-label','コピーしました');setTimeout(()=>{$('#copy-feedback').textContent='';$('#copy-feedback').classList.remove('shown');$('#copy-prompt').classList.remove('copied');$('#copy-prompt').setAttribute('aria-label','依頼文をコピー');},1800);}
   catch {announce('コピーできませんでした。表示された文章を選択してコピーしてください。',true);}
