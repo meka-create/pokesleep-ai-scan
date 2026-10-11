@@ -19,19 +19,21 @@ s=(R/'app.js').read_text()
 assert f"KIT_VERSION_RAW_SHA256 = '{H(K/'KIT_VERSION.json')}'" in s
 assert f"SITE_HOTFIX_ID = '{v['siteHotfixId']}'" in s
 assert v['siteHotfixId'] in (R/'sw.js').read_text()
-assert './app.js?v=v19-faded-subskill-onepass-20261011' in (R/'index.html').read_text()
+assert './app.js?v=v20-stage-subskill-onepass-20261011' in (R/'index.html').read_text()
 assert 'update-watch-close-bottom' not in (R/'index.html').read_text()
 for f in ('AI_INSTRUCTIONS.md','READING_RULES.md','SPECIES_AUDIT_GUIDE.md'):
  s=(K/f).read_text()
  for mark in ('ニックネーム','メインスキル','サブスキル','全画像','初回'):
   assert mark in s,(f,mark)
  if f!='SPECIES_AUDIT_GUIDE.md': assert 'Lv10' in s and 'Lv80' in s,(f,'lv')
- for id in ('IMG-0127','IMG-0131','IMG-0140','IMG-0164','IMG-0166'):
+ for id in ('IMG-0014','IMG-0120','IMG-0121','IMG-0132','IMG-0146','IMG-0127','IMG-0131','IMG-0140','IMG-0164','IMG-0166'):
   assert id not in s,(f,'blind reference contamination')
 assert '未解放' in (K/'AI_INSTRUCTIONS.md').read_text()
 assert '解放済みではレベル札が非表示' in (K/'READING_RULES.md').read_text()
 assert '文字が薄い未解放枠でも' in (K/'READING_RULES.md').read_text()
 assert 'その枠だけ元画像を画素非改変で拡大・再確認' in (K/'READING_RULES.md').read_text()
+assert '既知の似たスキル名から効果語を自動補完しない' in (K/'READING_RULES.md').read_text()
+assert '候補間の外見差を照合してから種族名を確定する' in (K/'READING_RULES.md').read_text()
 assert '全画像の一律な二度読み' in (K/'START_HERE.md').read_text()
 assert (K/'PROGRESS_PROTOCOL.md').read_text().startswith('# 画像解析・報告の確定運用')
 assert not ('Golden172' in (R/'app.js').read_text())
