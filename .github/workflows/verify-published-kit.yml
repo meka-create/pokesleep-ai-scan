@@ -1,4 +1,4 @@
-name: AI Scan public Pages kit integrity smoke (NO RELEASE)
+name: AI Scan DEV kit HOLD integrity on public Pages (NOT production audit)
 on:
   push:
     branches: [main]
@@ -37,7 +37,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.13'
-      - name: Check HTML, JS, all 16 kit assets and HOLD on actual public HTTP
+      - name: Check legacy dev-kit HOLD assets on public HTTP (NOT production validation)
         shell: bash
         run: |
           set -euo pipefail
@@ -52,7 +52,7 @@ jobs:
           j=json.load(open('public-evidence/PAGES_DEPLOYMENT_HEALTH.json'))
           assert j['result']=='ALL_EXPECTED_ASSETS_LIVE',j['result']
           assert j['productionCsvAllowed'] is False
-          print('ALL_PUBLIC_22_ASSETS_MATCH_EXPECTED_BYTES AND CSV_HOLD')
+          print('DEV_KIT_HOLD_ONLY: ALL_PUBLIC_22_ASSETS_MATCH_EXPECTED_BYTES; NOT_A_RELEASE_AUDIT')
           PY
       - name: Check omitted static assets over public HTTPS (10 paths)
         shell: bash
@@ -82,7 +82,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: AI_Scan_Public_Kit_22_Assets_ReadOnly_Evidence
+          name: AI_Scan_Dev_Kit_HOLD_Only_22_Assets_ReadOnly_Evidence
           path: public-evidence/
           retention-days: 30
           if-no-files-found: warn

@@ -26,7 +26,7 @@ for name,expected in d['rawAssetSha256'].items(): assert H(D/name)==expected,('r
 assert f"KIT_VERSION_RAW_SHA256 = '{H(D/'KIT_VERSION.json')}'" in s
 assert f"SITE_HOTFIX_ID = '{d['siteHotfixId']}'" in s
 assert d['siteHotfixId'] in (R/'sw.js').read_text()
-assert './app.js?v=v24-production-separate-kit-20261011' in (R/'index.html').read_text()
+assert './app.js?v=v25-final-audit-four-fixes-20261011' in (R/'index.html').read_text()
 assert "new URL('./release-kit-assets/'+name" in s
 assert "version.productionCsvAllowed!==true" in s
 assert "RELEASE_EVIDENCE.json" in s

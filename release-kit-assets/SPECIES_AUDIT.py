@@ -480,11 +480,12 @@ def main():
     p.add_argument('--observations',type=pathlib.Path)
     p.add_argument('--user-confirmations',type=pathlib.Path)
     p.add_argument('--output',type=pathlib.Path,required=True)
+    p.add_argument('--release-audit',action='store_true',help='Read-only audit against pinned release kit; never writes CSV')
     a=p.parse_args()
     try:
-        result=audit(a.package_dir,a.records,a.observations,user_confirmations_path=a.user_confirmations)
+        result=audit(a.package_dir,a.records,a.observations,allow_release=a.release_audit,user_confirmations_path=a.user_confirmations)
         a.output.write_text(json.dumps(result,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
-        print(f'SPECIES AUDIT {result["total"]} records; {result["statuses"]}; conflicts {len(result["hardConflicts"])}; PROTOTYPE HOLD')
+        print(f'SPECIES AUDIT {result["total"]} records; {result["statuses"]}; conflicts {len(result["hardConflicts"])}; {"RELEASE READ ONLY / NO CSV" if a.release_audit else "PROTOTYPE HOLD"}')
         if result['hardConflicts']:
             print('HOLD_CONFLICTS:',','.join(result['hardConflicts']))
             return 3

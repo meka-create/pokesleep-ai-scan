@@ -81,7 +81,7 @@ def run(package_dir, records_path, observations_path, output_dir, evidence_file=
     if species['total']!=manifest['inputImageCount'] or species['hardConflicts'] or species['identityReviewRecommendations'] or species['speciesAutoChanges'] or species['candidateRemovalsByNumeric']:
         raise ValueError('SpeciesAudit conflict/review pending; HOLD')
     data,report=build(records,manifest,load_json(pkg/'MASTER_DATA.json'),
-                     load_json(pkg/'CSV_SCHEMA.json'),version,pkg,prototype_test=False)
+                     load_json(pkg/'CSV_SCHEMA.json'),version,pkg,prototype_test=False,integrated_release_gate=True)
     if report['excluded']:
         # Manual confirmation records are structurally checked by Validator,
         # but the caller cannot authenticate chat authorship. Fail closed here.

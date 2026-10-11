@@ -22,7 +22,7 @@
 同梱のマスターを使い、次を実行（ファイルは実際の作業パスに置き換える）：
 
 ```
-python3 SPECIES_AUDIT.py --package-dir . --records WORKING_RECORDS.json --observations SPECIES_OBSERVATIONS.json --output SPECIES_REVIEW_RESULT.json
+python3 SPECIES_AUDIT.py --release-audit --package-dir . --records WORKING_RECORDS.json --observations SPECIES_OBSERVATIONS.json --output SPECIES_REVIEW_RESULT.json
 ```
 
 補助数値を読めなかった場合は `--observations` を省略して監査できる。CLIが使えなければ未実施と報告して安全側に留める。
@@ -34,7 +34,7 @@ python3 SPECIES_AUDIT.py --package-dir . --records WORKING_RECORDS.json --observ
 3. 複数種が成立する場合、SP / おてつだい時間 / 最大所持数の補助数値を記録して参照する。ゲーム仕様と旧マスターの推定差があるため、**数値だけで候補を消さず、自動確定もしない**。
 4. 数値が1種だけ一致していても、他の候補を除外できた証明ではない。必要に応じ元画像のアイコン、種族固有特徴を確認する。解決できなければユーザーへ確認してHOLD。
 5. おてつだい時間の±1秒許容は補助計算であり、SPは厳密照合に使用しない。最大所持数は現行仕様で入手経路そのものに依存せず、種族段階とリボン・解放済みサブスキルに依存する。将来マスター変更時は安全のため監査を停止する。
-6. `SPECIES_AUDIT.py` はCSVを**一切出力・修正しない**。正常終了後も本番CSVを許可しない。データの競合・不足はAIが画像と照合し解決する。
+6. 本番キットの単独監査には `--release-audit` を必須とする。この読み取り専用実行はCSVを**一切出力・修正しない**。正常終了しても `RELEASE_EXPORT_GATE.py` の統合ゲートPASSなしでは本番CSVを許可しない。データの競合・不足はAIが画像と照合し解決する。
 
 ## 安全上の限界
 

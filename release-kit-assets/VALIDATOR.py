@@ -283,7 +283,7 @@ def validate_included(row, pokemon_by_name, ingredient_set, natures, subskills, 
     return [nickname, species, level, skill_level, *foods, csv_skill, nature, *skills, sleep, shiny]
 
 
-def build(records, manifest, master, schema, version, directory, prototype_test=False):
+def build(records, manifest, master, schema, version, directory, prototype_test=False, *, integrated_release_gate=False):
     for name, value in [('records', records), ('manifest', manifest), ('master', master),
                         ('schema', schema), ('version', version)]:
         require(isinstance(value, dict), f'{name}のJSONルートはオブジェクトである必要があります')
@@ -291,6 +291,11 @@ def build(records, manifest, master, schema, version, directory, prototype_test=
             and isinstance(master.get('ingredients'), dict)
             and isinstance(master.get('natures'), list)
             and isinstance(master.get('subskills'), list), 'マスターの構造が不正です')
+    # A successful Validator pass ALONE does not fulfill SpeciesAudit, release
+    # evidence, row binding and gate status. The public release exporter must
+    # opt in after independently performing those checks.
+    require(version.get('productionCsvAllowed') is not True or integrated_release_gate,
+            '本番CSVはRELEASE_EXPORT_GATE.pyの統合監査を経由してください。直接Validator出力は拒否します; HOLD')
     require(prototype_test or (version.get('productionCsvAllowed') is True
                                and version.get('compatibilityVerified') is True
                                and version.get('masterVerifiedAgainstLive') is True
@@ -387,6 +392,12 @@ def main():
     directory = pathlib.Path(args.package_dir).resolve()
     output_path = directory / 'pokesleep_import.csv'
     try:
+        version = load_json(directory / 'KIT_VERSION.json')
+        # Remove stale direct-CLI outputs before rejecting a release kit; an old
+        # file is otherwise easy to mistake for a newly generated verified CSV.
+        if version.get('productionCsvAllowed') is True:
+            output_path.unlink(missing_ok=True)
+            raise ValidationError('本番キットではVALIDATOR.pyの直接CSV出力は禁止。RELEASE_EXPORT_GATE.pyを実行してください; HOLD')
         data, report = build(
             load_json(pathlib.Path(args.records)),
             load_json(directory / 'INPUT_MANIFEST.json'),
