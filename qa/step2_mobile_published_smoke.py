@@ -12,7 +12,7 @@ import zipfile
 from playwright.sync_api import sync_playwright
 
 ROOT=pathlib.Path(__file__).resolve().parents[1]
-SOURCE=ROOT/'assets/example-screenshot.png'
+SOURCE=ROOT/'icons/icon-192.png'
 OUT=ROOT/'step2_mobile_evidence'
 OUT.mkdir(exist_ok=True)
 EXPECTED=hashlib.sha256(SOURCE.read_bytes()).hexdigest()
@@ -37,6 +37,7 @@ with sync_playwright() as p:
             if close.count() and close.is_visible():
                 close.click()
         page.locator('#choose-files').set_input_files(str(SOURCE))
+        page.screenshot(path=str(OUT/'02_after_selected.png'),full_page=True)
         page.wait_for_function("() => document.querySelector('#build') && !document.querySelector('#build').disabled",timeout=25000)
         page.screenshot(path=str(OUT/'02_mobile_selected.png'),full_page=True)
         with page.expect_download(timeout=90000) as info:
