@@ -45,6 +45,10 @@ python3 SPECIES_AUDIT.py --package-dir . --records WORKING_RECORDS.json --observ
 
 種族監査はこれまでどおり単独の読み取り専用処理です。ただし開発用CSVの納品は必ず `PROTOTYPE_EXPORT_GATE.py --prototype-test --records WORKING_RECORDS.json --package-dir . --output-dir ./dev-output` を経由します。必要に応じて `--observations SPECIES_OBSERVATIONS.json` を追加します。矛盾・種族の未解決確認があればHOLDします。出力にはCSVの行と画像IDを結び付ける `DEVELOPMENT_ONLY_ROW_BINDING.json` を添付します。`VALIDATOR.py` とマスター/16列スキーマを変更せず、数値からの種族自動確定もしません。
 
+## 種族とスキルの独立観察（全件共通）
+
+画像の名前欄はニックネームであり、種族・進化段階・衣装/姿違いを特定する証拠にはならない。**種族の外見の実視認**と**メインスキル欄の表示名の実読取**を別々に行ってから、食材・メインスキルの候補監査に渡す。先にマスターの組合せで推測してから視認フラグを立てない。誤った種族と対応スキルがセットで入っても監査候補の整合だけでは検出できないので、種族の視覚根拠が欠ける場合は自動PASSにしない。補助数値による除外・画像未視認の自動確定は禁止のまま。これは初回読取の観点であり全画像の再解析ではない。
+
 ## 誤読しやすい項目の重点照合とユーザー確認（全枚数共通）
 
 **画像は必ず実際に読む。固定回帰の正解表・過去CSV・画像ID・ファイル名から値を埋めない。**
