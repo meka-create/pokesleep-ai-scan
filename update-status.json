@@ -1,8 +1,8 @@
 {
   "schemaVersion": "pokesleep-upstream-status-v1",
   "state": "healthy",
-  "checkedAt": "2026-10-13T01:04:30.839104Z",
-  "upstreamCommit": "f394104a0a9d44335a8697143464e5add9815643",
+  "checkedAt": "2026-10-13T23:10:32.059152Z",
+  "upstreamCommit": "2676b5c56a23432f1e6198e6754a7f7c49bc5042",
   "activeSourceCommit": null,
   "reasonCode": "UPSTREAM_STRUCTURE_MATCH",
   "message": "上流データの確認が完了しました。",
