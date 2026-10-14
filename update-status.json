@@ -1,12 +1,12 @@
 {
   "schemaVersion": "pokesleep-upstream-status-v1",
-  "state": "healthy",
-  "checkedAt": "2026-10-13T23:10:32.059152Z",
-  "upstreamCommit": "2676b5c56a23432f1e6198e6754a7f7c49bc5042",
+  "state": "attention",
+  "checkedAt": "2026-10-14T22:00:11.837127Z",
+  "upstreamCommit": "56d279eb57b56111d9e4bf47af46809c58ba135e",
   "activeSourceCommit": null,
-  "reasonCode": "UPSTREAM_STRUCTURE_MATCH",
-  "message": "上流データの確認が完了しました。",
-  "details": "構造上の変更は見つかっていません。CSV互換性は未検証です。",
+  "reasonCode": "UPDATE_REQUIRES_VALIDATION",
+  "message": "上流データの確認が必要です。",
+  "details": "上流データに差分があります。自動更新せず確認待ちです。",
   "runUrl": null,
   "productionCsvAllowed": false,
   "monitorMode": "READ_ONLY_NO_IMPORTER_NO_AUTOPROMOTION"
