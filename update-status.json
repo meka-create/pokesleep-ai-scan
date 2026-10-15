@@ -1,7 +1,7 @@
 {
   "schemaVersion": "pokesleep-upstream-status-v1",
   "state": "attention",
-  "checkedAt": "2026-10-14T22:00:11.837127Z",
+  "checkedAt": "2026-10-15T21:54:33.212108Z",
   "upstreamCommit": "56d279eb57b56111d9e4bf47af46809c58ba135e",
   "activeSourceCommit": null,
   "reasonCode": "UPDATE_REQUIRES_VALIDATION",
