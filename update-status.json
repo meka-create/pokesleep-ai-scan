@@ -1,12 +1,12 @@
 {
   "schemaVersion": "pokesleep-upstream-status-v1",
   "state": "attention",
-  "checkedAt": "2026-10-15T21:54:33.212108Z",
-  "upstreamCommit": "56d279eb57b56111d9e4bf47af46809c58ba135e",
+  "checkedAt": "2026-10-16T21:52:50.159328Z",
+  "upstreamCommit": null,
   "activeSourceCommit": null,
-  "reasonCode": "UPDATE_REQUIRES_VALIDATION",
-  "message": "上流データの確認が必要です。",
-  "details": "上流データに差分があります。自動更新せず確認待ちです。",
+  "reasonCode": "UPSTREAM_PREFLIGHT_FAILED",
+  "message": "更新状況の確認が必要です。",
+  "details": "上流監視が正常に完了しませんでした。",
   "runUrl": null,
   "productionCsvAllowed": false,
   "monitorMode": "READ_ONLY_NO_IMPORTER_NO_AUTOPROMOTION"
