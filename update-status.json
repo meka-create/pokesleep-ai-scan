@@ -1,7 +1,7 @@
 {
   "schemaVersion": "pokesleep-upstream-status-v1",
   "state": "attention",
-  "checkedAt": "2026-10-28T22:56:25.612687Z",
+  "checkedAt": "2026-10-29T23:04:14.041228Z",
   "upstreamCommit": null,
   "activeSourceCommit": null,
   "reasonCode": "UPSTREAM_PREFLIGHT_FAILED",
